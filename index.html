@@ -8,7 +8,7 @@
 :root{
   --bg:#12151b; --panel:#1c212b; --panel2:#242a36; --line:#333b4a;
   --text:#e9e7e2; --dim:#9aa3b2; --accent:#f5a623; --accent2:#4ea1ff;
-  --star:#ffb340; --star-off:#4a5261; --danger:#ff5a4e;
+  --star:#ffb340; --star-off:#4a5261;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -42,34 +42,38 @@ main{max-width:1080px; margin:0 auto; padding:16px}
 
 /* ---- select screen ---- */
 #screen-select h1{font-size:24px; margin:8px 0 2px}
-#screen-select .tagline{color:var(--dim); margin-bottom:10px}
-.progressline{
-  background:var(--panel2); border:1px solid var(--line); border-radius:10px;
-  padding:8px 14px; margin-bottom:12px; font-size:14px;
-}
-.progressline b{color:var(--star)}
+#screen-select .tagline{color:var(--dim); margin-bottom:14px}
 .rulebox{
   background:var(--panel); border:1px solid var(--line); border-radius:12px;
   padding:12px 16px; margin-bottom:14px;
 }
 .rulebox .rule-line{margin:3px 0}
 .rulebox .em{color:var(--accent); font-weight:700}
+.startotal{font-size:15px; color:var(--star); font-weight:700; margin-left:10px}
+.mode-tag{font-size:11px; color:var(--accent2)}
+.formula{color:var(--dim); font-size:13px; margin-top:8px}
+.formula p{margin:6px 0}
+.formula .eq{background:#141821; border:1px solid var(--line); border-radius:8px; padding:6px 12px; margin:6px 0;
+  color:var(--text); font-family:Consolas,Menlo,monospace; font-size:13px; overflow-x:auto}
+.formula ol,.formula ul{margin:6px 0 6px 20px}
+details.howto{margin-bottom:16px; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:10px 16px}
+details.howto summary{cursor:pointer; font-weight:700}
+details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
 #stageGrid{
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:10px;
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:10px;
 }
 .card{
   background:var(--panel); border:1px solid var(--line); border-radius:12px;
-  padding:10px 8px; text-align:center; cursor:pointer; transition:transform .1s, border-color .12s;
+  padding:12px 10px; text-align:center; cursor:pointer; transition:transform .1s, border-color .12s;
 }
 .card:hover{border-color:var(--accent2); transform:translateY(-2px)}
-.card .num{font-size:15px; font-weight:700}
-.card .modechip{font-size:11px; color:var(--dim)}
-.card .stars{font-size:14px; letter-spacing:2px}
+.card .num{font-size:17px; font-weight:700}
+.card .stars{font-size:15px; letter-spacing:2px; margin-top:2px}
 .card .stars .on{color:var(--star)} .card .stars .off{color:var(--star-off)}
-.card .best{font-size:11px; color:var(--dim); min-height:17px}
-.card .conds{font-size:12px; min-height:18px}
+.card .best{font-size:11px; color:var(--dim)}
 .card.locked{opacity:.45; cursor:default}
 .card.locked:hover{transform:none; border-color:var(--line)}
+.card.locked .lock{font-size:20px; margin:4px 0}
 #resetWrap{margin-top:22px; text-align:right}
 
 /* ---- game screen ---- */
@@ -88,11 +92,6 @@ main{max-width:1080px; margin:0 auto; padding:16px}
 #calcOverlay .msg{font-size:15px}
 #calcBarWrap{width:60%; height:10px; background:#2a3140; border-radius:5px; overflow:hidden}
 #calcBar{height:100%; width:0%; background:linear-gradient(90deg,var(--accent2),var(--accent)); transition:width .1s}
-#toast{
-  position:absolute; top:14px; left:50%; transform:translateX(-50%);
-  background:rgba(20,14,12,.92); border:1px solid var(--danger); color:#ffd9d5;
-  padding:6px 16px; border-radius:999px; font-size:13px; pointer-events:none; z-index:6;
-}
 #panel{flex:1 1 300px; min-width:280px; display:flex; flex-direction:column; gap:12px}
 .pbox{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 14px}
 .pbox h3{font-size:12px; color:var(--dim); font-weight:700; margin-bottom:6px; letter-spacing:.5px}
@@ -109,70 +108,99 @@ main{max-width:1080px; margin:0 auto; padding:16px}
 .thline{font-size:12px; color:var(--dim)}
 .thline .ok{color:var(--star); font-weight:700}
 .btnrow{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+.btnrow .lbl{color:var(--dim); font-size:12px; width:100%;margin-bottom:-4px}
 #legend{width:100%; height:12px; border-radius:6px; display:block; margin-top:6px}
 .legend-lbl{display:flex; justify-content:space-between; font-size:11px; color:var(--dim)}
 .hint{color:var(--dim); font-size:12px}
 
 /* ---- modal ---- */
-.modal-wrap{
+#modalWrap{
   position:fixed; inset:0; background:rgba(5,7,10,.66); z-index:50;
   display:flex; align-items:center; justify-content:center;
 }
-.modal{
+#modal{
   background:var(--panel); border:1px solid #3d4557; border-radius:16px;
-  padding:24px 28px; min-width:320px; max-width:430px; text-align:center;
+  padding:24px 28px; min-width:320px; max-width:420px; text-align:center;
   box-shadow:0 18px 60px rgba(0,0,0,.5);
 }
-.modal h2{font-size:18px; margin-bottom:10px}
+#modal h2{font-size:18px; margin-bottom:10px}
 #mStars{font-size:30px; letter-spacing:6px; margin:6px 0}
 #mStars .on{color:var(--star)} #mStars .off{color:var(--star-off)}
-.modal .row{margin:4px 0; font-size:14px}
-.modal .row b{font-variant-numeric:tabular-nums}
+#modal .row{margin:4px 0; font-size:14px}
+#modal .row b{font-variant-numeric:tabular-nums}
 #mBadges{margin:8px 0}
 .badge{display:inline-block; background:#2f4368; border:1px solid var(--accent2); color:#dceaff;
   border-radius:999px; padding:2px 12px; font-size:12px; margin:3px}
 .badge.gold{background:#4a3a12; border-color:var(--accent); color:#ffd98a}
 #mUnlockNote{color:var(--dim); font-size:12px; margin-top:8px}
-.modal .btns{display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap}
-
-/* ---- help ---- */
-#helpBox{
-  background:var(--panel); border:1px solid #3d4557; border-radius:16px;
-  padding:22px 26px; max-width:640px; max-height:82vh; overflow-y:auto; text-align:left;
-  box-shadow:0 18px 60px rgba(0,0,0,.5);
-}
-#helpBox h2{font-size:18px; margin-bottom:8px}
-#helpBox h3{font-size:14px; color:var(--accent); margin:14px 0 4px}
-#helpBox p, #helpBox li{font-size:13px; color:var(--text)}
-#helpBox ul{margin:4px 0 4px 20px}
-#helpBox .f{
-  display:block; background:#141821; border:1px solid var(--line); border-radius:8px;
-  padding:6px 12px; margin:4px 0; font-family:Consolas,Menlo,monospace; font-size:12.5px;
-}
-#helpBox .dimtext{color:var(--dim); font-size:12px}
+#modal .btns{display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap}
 </style>
 </head>
 <body>
 <header id="topbar">
   <button id="btnBack" class="btn ghost hidden">← ステージ選択</button>
   <div id="brand">🎱 ロングロール<span class="sub">最長軌跡チャレンジ</span></div>
-  <button id="btnHelp" class="btn ghost">❓ ヘルプ</button>
   <div id="stageInfo" class="hidden"><span id="modeInfo"></span>&nbsp; STAGE <b id="stageNum">1</b>&nbsp; <span id="seedInfo"></span></div>
 </header>
 <main>
 
 <!-- ========== ステージ選択 ========== -->
 <section id="screen-select">
-  <h1>ステージ選択</h1>
-  <p class="tagline">地形のどこかに玉を置いて、そのステージのモードのスコアを最大化しよう。</p>
-  <div class="progressline">⭐ 星の合計 <b id="starsTotal">0</b> 個 ／ 解放済み <b id="unlockedInfo">3</b> / 100 ステージ<span id="nextNeedWrap">（次の解放まであと <b id="nextNeed">2</b> 個）</span></div>
+  <h1>ステージ選択<span id="starTotal" class="startotal"></span></h1>
+  <p class="tagline">地形のどこかに玉を置いて、玉の転がりを最大化しよう。全100ステージ。</p>
   <div class="rulebox">
-    <div class="rule-line">🎮 <span class="em">モード（ステージごとに固定）</span>：🪂 <b>空気抵抗</b>＝強い空気抵抗の中で道のりの長さ ／ 🔷 <b>凸包サイズ</b>＝軌跡の凸包面積の平方根 ／ 🎯 <b>直線距離</b>＝スタートから最も離れた直線距離 ／ 🌀 <b>慣性半径</b>＝重心からの広がり Rg</div>
-    <div class="rule-line">🔓 <span class="em">解放仕様</span>：Stage 1〜3 は最初から解放。以降は<b>★の合計が2個増えるごと</b>に次の1ステージが解放されます。</div>
+    <div class="rule-line">🎮 <span class="em">モード</span>：ステージごとに <b>🪂 空気抵抗</b> → <b>📏 直線距離</b> → <b>🌀 慣性半径</b> の順で割り当てられています（Stage 1=🪂, 2=📏, 3=🌀, 4=🪂, …）。</div>
+    <div class="rule-line">🔓 <span class="em">アンロック仕様</span>：Stage 1〜3 は最初から解放。<b>★の合計が2個増えるごと</b>に次のステージが1つ解放されます（Stage n の解放条件：合計★ <b>2×(n−3)</b> 個）。</div>
     <div class="rule-line">⭐ 評価：理論値の <b>70%</b> で ★☆☆ ／ <b>90%</b> で ★★☆ ／ <b>95%</b> で ★★★</div>
-    <div class="rule-line">⚠ <span class="em">特殊条件</span>：🐌 抵抗2倍 ／ ⛰ 入山規制（赤いエリアに設置不可） ／ 🌍 重力2倍 — 後半のステージほど出現しやすくなります。</div>
-    <div class="rule-line">🔁 マップは上下左右ループ ／ 玉は摩擦で必ず停止 ／ 🎲 シード生成（平坦な地形も出現） ／ 詳しい計算式は「❓ ヘルプ」へ。</div>
+    <div class="rule-line">🔁 マップは上下左右がループ（トーラス構造）。玉は必ず停止します。🎲 各ステージはシード値から生成され、後半ほど地形が複雑になります。</div>
   </div>
+  <details class="howto">
+    <summary>遊び方</summary>
+    <ul>
+      <li>マップをクリックすると、その位置に玉が置かれ、重力で低い方へ転がり始めます。何度でも置き直せます（ベストが記録されます）。</li>
+      <li><b>🪂 空気抵抗</b>：摩擦がほぼなく、空気抵抗（速度依存）で減速する滑走物理。停止するまでの<b>道のりの長さ</b>がスコア。玉は非常に長く走ります。</li>
+      <li><b>📏 直線距離</b>：スタート地点から<b>最も遠くに到達した直線距離</b>がスコア（破線の円で表示。マップを何周しても積算）。</li>
+      <li><b>🌀 慣性半径</b>：軌跡の<b>重心からの広がり Rg</b> がスコア（重心とRg円を破線で表示）。細かいジタバタは埋もれ、大きな動きだけが効きます。</li>
+      <li><b>理論値</b>＝そのステージで可能な最大スコア（ステージ読み込み時に全域探索で自動算出。初回のみ数秒）。</li>
+      <li>「カラー」「等高線」ボタンで高さの表示方法を切り替えられます。明るい色ほど高い場所です。再生速度は ×1 / ×4 / ×16、「⏩ 結果へ」で即座に結果を見られます。</li>
+    </ul>
+  </details>
+  <details class="howto">
+    <summary>📐 スコアの計算式</summary>
+    <div class="formula">
+      <p><b>物理（全モード共通の運動方程式）</b>：位置 p、速度 v、地形の高さ h(p) に対して</p>
+      <p class="eq">a = −G∇h(p) − (c₁ + c₂|v|)·v − μG·v/|v|</p>
+      <p>右辺は順に「重力（斜面の勾配）」「空気抵抗（線形＋速度2乗）」「転がり摩擦」。G=25。定数はモードで異なります：</p>
+      <ul>
+        <li>通常物理（📏直線距離・🌀慣性半径）：c₁=0.1, c₂=0, μ=0.05</li>
+        <li>🪂空気抵抗モード：c₁=0.07, c₂=0.015, μ=0.015 …… 速度2乗の空気抵抗が主体で、通常より長く滑走する</li>
+      </ul>
+      <p>摩擦がある限り運動エネルギーは単調に減少するため、玉は必ず停止します（道のり ≦ 落差/μ が成り立つ）。</p>
+      <p><b>🪂 軌跡長（空気抵抗モードのスコア）</b></p>
+      <p class="eq">Score = L = ∫ |v| dt</p>
+      <p>xy平面上を転がった道のりの合計。高さ方向の移動は含みません。</p>
+      <p><b>📏 直線距離</b></p>
+      <p class="eq">Score = max<sub>t</sub> |p(t) − p(0)|</p>
+      <p>スタートから各時刻の位置までの直線距離の最大値。位置はマップのラップを展開した座標で測るため、右へ2周すれば +200 と数えます。</p>
+      <p><b>🌀 慣性半径</b></p>
+      <p class="eq">p̄ = (1/L) ∫ p ds （軌跡の重心・道のり加重）<br>Rg = √( (1/L) ∫ |p − p̄|² ds )</p>
+      <p>ds＝道のりの微小要素（ds = |v|dt）。軌跡という「線」を均質な針金とみなしたときの、重心まわりの慣性半径です。同じ場所で長く動くと ds の重みがそこに集中して重心が引き寄せられ、Rg は伸びません。重心から遠い場所を長く走る軌跡だけが大きな Rg を持ちます。しきい値パラメータを一切含まない純幾何量で、軌跡を2倍に拡大すると Rg もちょうど2倍になります。</p>
+    </div>
+  </details>
+  <details class="howto">
+    <summary>🗒 裏話 — 慣性半径にたどり着くまで</summary>
+    <div class="formula">
+      <p>このゲームのスコアは最初「道のりの長さ」だけでした。ところがエネルギー収支を考えると、摩擦が消費するエネルギーは μG×道のり、供給源はスタート地点の位置エネルギーだけ。つまり <b>道のり ≦ 落差/μ</b> が成り立ってしまい、「いちばん高い所に置く」がほぼ最適解になります。「高低差ではなく、横方向の大きな動きを評価したい」——ここから試行錯誤が始まりました。</p>
+      <ol>
+        <li><b>スタートからの最遠直線距離</b> — シンプルで分かりやすい。ただ、大きく一周してスタート付近へ戻ってくる豪快な軌跡が0点になる違和感があった（それでもシンプルさに価値があるため、📏直線距離モードとして採用されています）。</li>
+        <li><b>軌跡を囲う長方形の対角線（行動範囲）</b> — 戻ってきても遠出が評価されるようになったが、外接矩形は軸の向きに依存し、軌跡の中身をすべて無視する大味さが残った。</li>
+        <li><b>一定距離(10)以上の移動だけを数える（ストライド）</b> — チェックポイント円の外へ出た移動だけを積算する方式。狙いどおり細かいジタバタを無効化できたが、「半径10」という人為的な定数がどうしても残る。<b>半径に依存していて美しくない。</b></li>
+        <li><b>移動を2乗して小さい動きを潰す</b> — ステップ毎の移動距離の2乗和は実は速度2乗の時間積分で、エネルギー収支を整理すると <b>落差 − μ×道のり</b> に比例することが判明。高低差依存がむしろ強まる逆効果だった。</li>
+        <li>ただし「2乗」を速度ではなく<b>位置の広がり</b>に使うと話が一変する。重心からの距離の2乗平均の平方根 — <b>慣性半径 Rg</b>。定数ゼロ、純幾何、スケール共変、物理的意味も明快（軌跡という線の慣性モーメント）。小さなジタバタは重心に埋もれ、大きな動きだけが残る。</li>
+      </ol>
+      <p>というわけで、多くの試作の末に生き残った3つの評価が、このゲームの3モードです。</p>
+    </div>
+  </details>
   <div id="stageGrid"></div>
   <div id="resetWrap"><button id="btnReset" class="btn ghost">進捗をリセット</button></div>
 </section>
@@ -186,19 +214,13 @@ main{max-width:1080px; margin:0 auto; padding:16px}
         <div class="msg">理論値を探索中…</div>
         <div id="calcBarWrap"><div id="calcBar"></div></div>
       </div>
-      <div id="toast" class="hidden"></div>
       <div class="loopnote">🔁 上下左右ループ ／ クリックで玉を置く（何度でも試せます）</div>
     </div>
     <aside id="panel">
       <div class="pbox">
-        <h3>ステージ情報</h3>
-        <div class="statrow"><span class="k">モード</span><span class="v" id="stModeV">—</span></div>
-        <div class="statrow"><span class="k">特殊条件</span><span class="v" id="stCondV">なし</span></div>
-      </div>
-      <div class="pbox">
         <h3>スコア</h3>
-        <div class="statrow"><span class="k">理論値（探索最良）</span><span class="v" id="hudTheo">—</span></div>
-        <div class="statrow"><span class="k" id="hudNowLabel">今回</span><span class="v" id="hudNow">—</span></div>
+        <div class="statrow"><span class="k">理論値（探索最長）</span><span class="v" id="hudTheo">—</span></div>
+        <div class="statrow"><span class="k" id="hudNowLabel">今回の軌跡長</span><span class="v" id="hudNow">—</span></div>
         <div class="statrow"><span class="k">ベスト</span><span class="v" id="hudBest">—</span></div>
         <div class="statrow"><span class="k">評価</span><span id="hudStars">☆☆☆</span></div>
         <div class="bar">
@@ -232,21 +254,24 @@ main{max-width:1080px; margin:0 auto; padding:16px}
           <button id="btnClear" class="btn">🧹 玉を消す</button>
         </div>
       </div>
-      <div class="pbox hint" id="hintBox"></div>
+      <div class="pbox hint" id="hintBox">
+        💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>
+        高い所から谷を伝って長く走るルートを探そう。勢い余って峠を越えると大きく距離を稼げます。
+      </div>
     </aside>
   </div>
 </section>
 </main>
 
 <!-- ========== 結果モーダル ========== -->
-<div id="modalWrap" class="modal-wrap hidden">
-  <div class="modal">
+<div id="modalWrap" class="hidden">
+  <div id="modal">
     <h2>🏁 停止しました</h2>
-    <div class="row"><span id="mLenLabel">スコア</span>：<b id="mLen">0</b>（理論値の <b id="mPct">0</b>%）<span id="mExtra" style="color:var(--dim)"></span></div>
+    <div class="row"><span id="mLenLabel">軌跡の長さ</span>：<b id="mLen">0</b>（理論値の <b id="mPct">0</b>%）<span id="mExtra" style="color:var(--dim)"></span></div>
     <div id="mStars"></div>
     <div class="row" style="color:var(--dim)">ベスト達成率：<b id="mBestPct">0</b>%</div>
     <div id="mBadges"></div>
-    <div id="mUnlockNote"></div>
+    <div id="mUnlockNote">クリア（★1＝70%）でステージ n+1・n+2 がアンロックされます</div>
     <div class="btns">
       <button id="mRetry" class="btn">もう一度</button>
       <button id="mNext" class="btn primary">次のステージ ▶</button>
@@ -255,96 +280,36 @@ main{max-width:1080px; margin:0 auto; padding:16px}
   </div>
 </div>
 
-<!-- ========== ヘルプ ========== -->
-<div id="helpWrap" class="modal-wrap hidden">
-  <div id="helpBox">
-    <h2>❓ ヘルプ</h2>
-    <p>マップをクリックすると玉が置かれ、重力で転がって摩擦で停止します。停止までの動きが、そのステージの<b>モードの計算式</b>で採点されます。何度でも置き直せます（ベストが記録されます）。</p>
-
-    <h3>スコアの計算式</h3>
-    <p class="dimtext">位置 p はマップ端をまたいでも折り返さない「非ラップ座標」で扱います（ループを何周しても積算される）。</p>
-    <ul>
-      <li>🪂 <b>空気抵抗</b> — 軌跡の長さ（道のり）
-        <span class="f">L = Σ |Δp|　（毎ステップの移動距離の総和）</span>
-        物理が特殊で、通常の転がり摩擦に加えて<b>強い空気抵抗</b>（下記）が働きます。</li>
-      <li>🎯 <b>直線距離</b> — スタートから最も離れた瞬間の直線距離
-        <span class="f">D = max<sub>t</sub> |p(t) − p(0)|</span></li>
-      <li>🔷 <b>凸包サイズ</b> — 軌跡の凸包（すべての通過点を含む最小の凸多角形）の面積の平方根
-        <span class="f">S = √A　（A＝約1間隔でサンプリングした軌跡点の凸包の面積）</span>
-        一直線の往復は面積0。広く「面」を囲む動きが評価されます。</li>
-      <li>🌀 <b>慣性半径</b> — 重心まわりの広がり（道のり加重の二乗平均平方根）
-        <span class="f">Rg = √( Σ dsᵢ·|pᵢ − p̄|² ÷ Σ dsᵢ )</span>
-        <span class="f">p̄ = Σ dsᵢ·pᵢ ÷ Σ dsᵢ　（dsᵢ＝そのステップの移動距離）</span>
-        しきい値パラメータのない純幾何評価。一箇所に長く留まると重心がそこへ寄り、Rg は伸びません。</li>
-    </ul>
-
-    <h3>物理モデル</h3>
-    <span class="f">dv/dt = −g∇h − (c₁ + c₂|v|)·v − μg·v/|v|</span>
-    <ul>
-      <li>重力係数 g = 25（🌍重力2倍では 50）</li>
-      <li>転がり摩擦 μ = 0.025（全モード共通。|∇h| &lt; μ の場所でのみ静止可能）</li>
-      <li>空気抵抗 c₁ = 0.05, c₂ = 0（通常モード）</li>
-      <li>空気抵抗モードのみ c₁ = 0.17, c₂ = 0.04（摩擦 μ は同じ）</li>
-      <li>🐌抵抗2倍では μ, c₁, c₂ がすべて2倍</li>
-      <li>時間刻み 1/120 秒・最大 24000 ステップ（理論値探索も同一条件で公平）</li>
-    </ul>
-
-    <h3>理論値</h3>
-    <p>ステージ読み込み時に、開始点を 40×40 の全域グリッド＋上位候補まわりの2段階絞り込みで探索した最良スコアです（プレイヤーと完全に同一のシミュレータを使用）。⛰入山規制のステージでは探索も規制エリア外のみを対象にします。</p>
-
-    <h3>評価と解放</h3>
-    <ul>
-      <li>理論値の 70% で ★☆☆ ／ 90% で ★★☆ ／ 95% で ★★★</li>
-      <li>Stage 1〜3 は最初から解放。以降は<b>★の合計2個ごと</b>に次の1ステージが解放（例：★4個で Stage 5 まで）</li>
-    </ul>
-
-    <h3>特殊条件</h3>
-    <ul>
-      <li>🐌 <b>抵抗2倍</b> — 転がり摩擦と空気抵抗が2倍になります。</li>
-      <li>⛰ <b>入山規制</b> — 一定標高以上（赤く表示）には玉を置けません。転がって侵入するのは自由です。</li>
-      <li>🌍 <b>重力2倍</b> — 重力加速度が2倍。速く転がり、峠を越えやすくなります。</li>
-    </ul>
-    <p class="dimtext">特殊条件は後半のステージほど出現しやすく、さらに後半では2つ重なることもあります。</p>
-
-    <h3>地形</h3>
-    <p>各ステージはシード値から決定論的に生成されます（周期的なサイン波の重ね合わせ＋一部標高帯の平坦化）。後半ほど波の本数・空間周波数が増えて複雑になります。マップは上下左右がループするトーラス構造です。</p>
-    <div class="btns" style="display:flex;justify-content:center;margin-top:14px">
-      <button id="helpClose" class="btn primary">閉じる</button>
-    </div>
-  </div>
-</div>
-
 <script>
 'use strict';
 /* =====================================================================
-   ロングロール v2
-   - 4モード（ステージ固定割当）: A=空気抵抗 / H=凸包サイズ / D=直線距離 / G=慣性半径
-   - 100ステージ・★合計2個ごとに1ステージ解放（1〜3は初期解放）
-   - 特殊条件: 抵抗2倍 / 入山規制 / 重力2倍（後半ほど頻出）
-   - 地形: 周期サイン波和 + 標高帯の平坦化（プラトー生成）
+   ロングロール — 玉の転がる軌跡を最長にする2Dパズル
+   - 地形: シード付きの周期的サイン波和（トーラス上で完全ループ）
+   - 物理: 重力(-G∇h) + 粘性抵抗 + クーロン転がり摩擦 → 必ず停止
+   - 理論値: 同一シミュレータで開始点を全域グリッド探索＋局所絞り込み
    ===================================================================== */
 
 // ---------- 定数 ----------
-const VERSION   = 'v2';
-const L         = 100;
-const GRID      = 256;
-const G0        = 25;      // 重力係数（重力2倍で×2）
-const MU0       = 0.025;   // 転がり摩擦（全モード共通）
-const DRAG0     = 0.05;    // 基本の線形空気抵抗
-const DRAG_AIR  = 0.12;    // 空気抵抗モードで追加される線形抵抗
-const QDRAG_AIR = 0.04;    // 空気抵抗モードの速度2乗抵抗
-const DT        = 1/120;
-const MAX_STEPS = 24000;
-const STOP_V    = 0.06;
-const STOP_FRAMES = 30;
-const SLOPE_TARGET= 0.6;
+const VERSION   = 'v4';
+const L         = 100;      // ワールドの一辺（トーラス周期）
+const GRID      = 256;      // 高さ・勾配の格子解像度
+const G         = 25;       // 重力係数
+const DRAG      = 0.1;      // 通常物理: 空気抵抗（線形）[1/s]
+const MU        = 0.05;     // 通常物理: 転がり摩擦係数
+const DT        = 1/120;    // 固定タイムステップ
+const MAX_STEPS = 24000;    // 安全上限（200秒相当）: プレイヤーも探索も同一
+const STOP_V    = 0.06;     // 停止判定の速度しきい値
+const STOP_FRAMES = 30;     // 連続静止ステップ数
+const SLOPE_TARGET= 0.6;    // 地形正規化: 最大勾配
 const STAGES    = 100;
-const FREE_STAGES = 3;       // 初期解放ステージ数
-const STARS_PER_UNLOCK = 2;  // ★何個ごとに1ステージ解放か
 const CANVAS_SIZE = 660;
 const SCALE     = CANVAS_SIZE / L;
 const STAR_TH   = [70, 90, 95];
-const HULL_SAMPLE_DIST = 1.0; // 凸包用サンプリングの距離間隔
+// 空気抵抗モードの物理: 転がり摩擦を抑えつつ、線形+速度2乗の空気抵抗を主体にした滑走物理。
+// 通常物理より長く滑るが、それでも十分に抵抗を効かせる設定。
+const MU_AIR    = 0.015;
+const DRAG_AIR  = 0.07;
+const QDRAG_AIR = 0.015;
 
 // ---------- 乱数 ----------
 function mulberry32(a){
@@ -361,67 +326,39 @@ const stageSeed = s => (Math.imul(s, 2654435761) ^ 0x5F356495) >>> 0;
 const memLS = {};
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return memLS[k] ?? null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){ memLS[k]=v; } }
+function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){ delete memLS[k]; } }
 
 const SAVE_KEY = `longroll_${VERSION}_save`;
 let save = loadSave();
 function loadSave(){
   try{
     const s = JSON.parse(lsGet(SAVE_KEY));
-    if(s && s.stars) return s;
+    if(s && s.stars && s.best) return s;
   }catch(e){}
   return { stars:{}, best:{} };
 }
 function persist(){ lsSet(SAVE_KEY, JSON.stringify(save)); }
 function totalStars(){ let t=0; for(const k in save.stars) t+=save.stars[k]; return t; }
-function unlockedCount(){ return Math.min(STAGES, FREE_STAGES + Math.floor(totalStars()/STARS_PER_UNLOCK)); }
+// アンロック仕様: Stage 1〜3 は最初から解放。以降は★合計2個ごとに1ステージ解放
+function unlockedCount(){ return Math.min(STAGES, 3 + Math.floor(totalStars()/2)); }
+// ステージごとのモード割り当て: 🪂空気抵抗 → 📏直線距離 → 🌀慣性半径 の繰り返し
+const MODE_CYCLE = ['A','D','G'];
+const stageMode = n => MODE_CYCLE[(n-1)%3];
+// mode: 'A'=空気抵抗（滑走物理・道のり） / 'D'=直線距離（スタートからの最遠到達） / 'G'=慣性半径
+let mode = 'A';
+const metric = r => mode==='A' ? r.len : mode==='D' ? r.maxD : r.rg;
+const MODE_INFO={
+  A:{ icon:'🪂', short:'空気抵抗', name:'🪂 空気抵抗モード', now:'今回の軌跡長', score:'軌跡の長さ',
+      hint:'💡 摩擦がほぼなく、空気抵抗で減速する滑走物理。停止までの道のりの長さがスコア。速いほど空気抵抗が強く効くため、勢い任せの急降下より滑走が長く続くルートが有利です。' },
+  D:{ icon:'📏', short:'直線距離', name:'📏 直線距離モード', now:'今回の直線距離', score:'直線距離',
+      hint:'💡 スタート地点からの最遠直線距離がスコア（破線の円＝現在の記録）。一方向へ長く抜けるルートを探そう。マップを何周しても積算されます。' },
+  G:{ icon:'🌀', short:'慣性半径', name:'🌀 慣性半径モード', now:'今回の慣性半径', score:'慣性半径 Rg',
+      hint:'💡 軌跡の重心からの広がり Rg がスコア（破線の円＝重心と Rg）。重心から離れた場所を長く走るほど円が広がります。一箇所に留まると重心が寄って伸びません。' },
+};
 const theoKey = n => `longroll_${VERSION}_theo_${n}`;
-function loadTheoRaw(n){ const v=lsGet(theoKey(n)); return v?JSON.parse(v):null; }
-
-// ---------- モードと特殊条件 ----------
-const MODE_ORDER = ['A','H','D','G']; // Stage1から順に循環
-const MODE_INFO = {
-  A:{ icon:'🪂', name:'空気抵抗', score:'軌跡の長さ', now:'今回の軌跡長',
-      hint:'強い空気抵抗の中で<b>道のりの長さ</b>を競います。速いほど抵抗が強く効くので、勢い任せの急降下より長く転がり続けるルートが有利。' },
-  H:{ icon:'🔷', name:'凸包サイズ', score:'凸包サイズ √面積', now:'今回の凸包サイズ',
-      hint:'軌跡の<b>凸包（破線の多角形）の面積の平方根</b>がスコア。一直線の往復は面積0。大きく「面」を囲むように回り込むルートを探そう。' },
-  D:{ icon:'🎯', name:'直線距離', score:'直線距離', now:'今回の直線距離',
-      hint:'スタート地点から<b>最も離れた瞬間の直線距離</b>がスコア（破線の円）。一方向へ遠くまで走り抜けるルートが有利。ループ跨ぎも積算されます。' },
-  G:{ icon:'🌀', name:'慣性半径', score:'慣性半径 Rg', now:'今回の慣性半径',
-      hint:'軌跡の<b>重心からの広がり Rg</b>（破線の円）がスコア。重心から離れた場所を長く走るほど円が広がります。一箇所に留まると重心が寄って伸びません。' },
-};
-const COND_INFO = {
-  res2:  { icon:'🐌', name:'抵抗2倍',  desc:'摩擦と空気抵抗が2倍' },
-  noHigh:{ icon:'⛰', name:'入山規制', desc:'赤いエリアに設置不可' },
-  grav2: { icon:'🌍', name:'重力2倍',  desc:'重力加速度が2倍' },
-};
-
-// ステージ設定（モード・特殊条件・物理定数）をシードから決定
-function stageConfig(n){
-  const rng = mulberry32(stageSeed(n) ^ 0x51ED5EED);
-  const mode = MODE_ORDER[(n-1) % MODE_ORDER.length];
-  const r1=rng(), r2=rng(), r3=rng(), r4=rng(), r5=rng();
-  const conds=[];
-  const p1 = n<=8 ? 0 : Math.min(0.75, (n-8)/70);   // 特殊条件の出現率（後半ほど高い）
-  if(r1<p1){
-    const pool=['res2','noHigh','grav2'];
-    conds.push(pool[Math.floor(r2*3)]);
-    const p2 = n<40 ? 0 : Math.min(0.4, (n-40)/150); // 2つ目の条件（さらに後半）
-    if(r3<p2){
-      const rest=pool.filter(c=>c!==conds[0]);
-      conds.push(rest[Math.floor(r4*2)]);
-    }
-  }
-  const mul = conds.includes('res2') ? 2 : 1;
-  return {
-    mode, conds,
-    g:     G0 * (conds.includes('grav2') ? 2 : 1),
-    mu:    MU0 * mul,
-    drag:  (mode==='A' ? DRAG0+DRAG_AIR : DRAG0) * mul,
-    qdrag: (mode==='A' ? QDRAG_AIR : 0) * mul,
-    noHigh: conds.includes('noHigh'),
-    highFrac: 0.55 + 0.2*r5,   // 入山規制のしきい値（標高割合）
-    hTh: Infinity,             // 実際の高さしきい値は地形生成後に設定
-  };
+function loadTheoRaw(n){
+  const v = lsGet(theoKey(n));
+  return v ? JSON.parse(v) : null;
 }
 
 // ---------- 地形 ----------
@@ -429,8 +366,8 @@ class Terrain{
   constructor(stage){
     this.stage = stage;
     const rng  = mulberry32(stageSeed(stage));
-    const nT   = Math.min(6 + Math.floor(stage*1.2), 44);
-    const maxF = Math.min(2 + Math.floor(stage/7), 11);
+    const nT   = Math.min(6 + stage*2, 44);                 // 波の本数: ステージで増加
+    const maxF = Math.min(2 + Math.floor((stage-1)/3), 12); // 最大空間周波数: ステージで増加
     const terms = [];
     for(let i=0;i<nT;i++){
       let kx=0, ky=0;
@@ -455,45 +392,20 @@ class Terrain{
         for(let t=0;t<terms.length;t++){
           const [ax,ay,A,ph] = terms[t];
           const arg = ax*x + ay*y + ph;
-          hh  += A*Math.sin(arg);
-          const c = A*Math.cos(arg);
-          gxx += ax*c;
-          gyy += ay*c;
+          const s = Math.sin(arg), c = Math.cos(arg);
+          hh  += A*s;
+          gxx += A*ax*c;
+          gyy += A*ay*c;
         }
         const idx = j*N+i;
         h[idx]=hh; gx[idx]=gxx; gy[idx]=gyy;
       }
     }
-    // --- 平坦帯: 一部の標高帯を h→f(h) 変換で完全フラット化（勾配は f'(h) 倍）---
-    const rngF = mulberry32(stageSeed(stage) ^ 0x77777777);
-    const nB = 1 + Math.floor(rngF()*2); // 1〜2帯
-    for(let b=0;b<nB;b++){
-      let mn=Infinity, mx=-Infinity;
-      for(let i=0;i<N*N;i++){ if(h[i]<mn)mn=h[i]; if(h[i]>mx)mx=h[i]; }
-      const range=mx-mn;
-      const c = mn + range*(0.15 + 0.7*rngF()); // 帯の中心高さ
-      const w = range*(0.05 + 0.06*rngF());     // 帯の半幅
-      const a = 0.6;                             // 帯の内側60%は完全フラット
-      for(let i=0;i<N*N;i++){
-        const t=(h[i]-c)/w;
-        const at=Math.abs(t), s=t<0?-1:1;
-        if(at<=a){ h[i]=c; gx[i]=0; gy[i]=0; }
-        else if(at<1){
-          const u=(at-a)/(1-a);
-          const S=u*u*(3-2*u);                       // f'(h)
-          const I=(1-a)*(u*u*u - u*u*u*u/2);          // ∫f' （t単位）
-          h[i]=c + s*w*I;
-          gx[i]*=S; gy[i]*=S;
-        }else{
-          h[i]=c + s*w*((1-a)/2 + at-1);              // 帯の外は定数シフトのみ
-        }
-      }
-    }
-    // --- 勾配の最大値を SLOPE_TARGET に正規化 ---
+    // 勾配の最大値を SLOPE_TARGET に正規化（全ステージで物理条件を揃える）
     let maxS = 0;
     for(let i=0;i<N*N;i++){
-      const s2 = gx[i]*gx[i]+gy[i]*gy[i];
-      if(s2>maxS) maxS = s2;
+      const s = gx[i]*gx[i]+gy[i]*gy[i];
+      if(s>maxS) maxS = s;
     }
     const sc = SLOPE_TARGET/Math.sqrt(maxS);
     let mn=Infinity, mx=-Infinity;
@@ -505,21 +417,12 @@ class Terrain{
     this._contours=null; this._img=null;
   }
 
-  heightAt(x,y){
-    const N=GRID, inv=N/L, h=this.h;
-    const u=x*inv, v=y*inv;
-    let i0=u|0, j0=v|0;
-    if(i0>=N)i0-=N; if(j0>=N)j0-=N;
-    const fu=u-(u|0), fv=v-(v|0);
-    const i1=i0+1<N?i0+1:0, j1=j0+1<N?j0+1:0;
-    const r0=j0*N, r1=j1*N;
-    return (h[r0+i0]*(1-fu)+h[r0+i1]*fu)*(1-fv) + (h[r1+i0]*(1-fu)+h[r1+i1]*fu)*fv;
-  }
-
-  // 指定レベル群の等値線セグメントを抽出（マーチングスクエア）
-  marchingSegs(levels){
-    const N=GRID, h=this.h, cs=L/N;
-    const out=levels.map(()=>[]);
+  // 等高線（マーチングスクエア、ラップ込み）
+  contours(){
+    if(this._contours) return this._contours;
+    const N=GRID, h=this.h, cs=L/N, nLv=14;
+    const lvs=[], out=[];
+    for(let i=1;i<=nLv;i++){ lvs.push(this.minH+(this.maxH-this.minH)*i/(nLv+1)); out.push([]); }
     for(let j=0;j<N;j++){
       const j1=(j+1)%N, y0=j*cs, y1=y0+cs;
       for(let i=0;i<N;i++){
@@ -527,12 +430,13 @@ class Terrain{
         const a=h[j*N+i], b=h[j*N+i1], c=h[j1*N+i1], d=h[j1*N+i];
         let mn4=a<b?a:b; if(c<mn4)mn4=c; if(d<mn4)mn4=d;
         let mx4=a>b?a:b; if(c>mx4)mx4=c; if(d>mx4)mx4=d;
-        for(let li=0;li<levels.length;li++){
-          const lv=levels[li];
+        for(let li=0;li<nLv;li++){
+          const lv=lvs[li];
           if(lv<mn4||lv>mx4) continue;
           const m=(a>lv?1:0)|(b>lv?2:0)|(c>lv?4:0)|(d>lv?8:0);
           if(m===0||m===15) continue;
           const s=out[li];
+          // 辺: top(a-b) right(b-c) bottom(d-c) left(a-d)
           switch(m){
             case 1: case 14:
               s.push(x0+cs*(lv-a)/(b-a), y0, x0, y0+cs*(lv-a)/(d-a)); break;
@@ -558,17 +462,11 @@ class Terrain{
         }
       }
     }
+    this._contours=out;
     return out;
   }
 
-  contours(){
-    if(this._contours) return this._contours;
-    const nLv=14, lvs=[];
-    for(let i=1;i<=nLv;i++) lvs.push(this.minH+(this.maxH-this.minH)*i/(nLv+1));
-    this._contours=this.marchingSegs(lvs);
-    return this._contours;
-  }
-
+  // カラー高さマップ（陰影付き）を N×N キャンバスに描画
   image(){
     if(this._img) return this._img;
     const N=GRID, h=this.h, gx=this.gx, gy=this.gy;
@@ -580,6 +478,7 @@ class Terrain{
     for(let i=0;i<N*N;i++){
       let t=(h[i]-this.minH)/range;
       let ci=(t*255)|0; if(ci<0)ci=0; if(ci>255)ci=255;
+      // 左上からの光による簡易陰影
       let sh=1 + 1.15*(gx[i]*0.55 + gy[i]*0.75);
       if(sh<0.6)sh=0.6; if(sh>1.32)sh=1.32;
       const p=i*4;
@@ -595,6 +494,7 @@ class Terrain{
   }
 }
 
+// 標高カラーマップ LUT（低: 青 → 緑 → 砂 → 高: 白）
 const COLOR_LUT = (()=>{
   const stops=[
     [0.00, 0x2b,0x4a,0x7f],
@@ -617,57 +517,32 @@ const COLOR_LUT = (()=>{
   return lut;
 })();
 
-// ---------- 凸包（Andrew's monotone chain） ----------
-function hullMetrics(xs,ys){
-  const n=xs.length;
-  if(n<3) return {area:0, pts:[]};
-  const idx=Array.from({length:n},(_,i)=>i);
-  idx.sort((a,b)=> xs[a]-xs[b] || ys[a]-ys[b]);
-  const cross=(o,a,b)=>(xs[a]-xs[o])*(ys[b]-ys[o])-(ys[a]-ys[o])*(xs[b]-xs[o]);
-  const lower=[];
-  for(let k=0;k<idx.length;k++){
-    const i=idx[k];
-    while(lower.length>=2 && cross(lower[lower.length-2],lower[lower.length-1],i)<=0) lower.pop();
-    lower.push(i);
-  }
-  const upper=[];
-  for(let k=idx.length-1;k>=0;k--){
-    const i=idx[k];
-    while(upper.length>=2 && cross(upper[upper.length-2],upper[upper.length-1],i)<=0) upper.pop();
-    upper.push(i);
-  }
-  lower.pop(); upper.pop();
-  const hull=lower.concat(upper);
-  if(hull.length<3) return {area:0, pts:hull.map(i=>[xs[i],ys[i]])};
-  let A=0;
-  for(let i=0;i<hull.length;i++){
-    const j=(i+1)%hull.length;
-    A += xs[hull[i]]*ys[hull[j]] - xs[hull[j]]*ys[hull[i]];
-  }
-  return {area:Math.abs(A)/2, pts:hull.map(i=>[xs[i],ys[i]])};
-}
-
 // ---------- 物理シミュレーション（プレイヤーも理論値探索も共通） ----------
-// conf: stageConfig の物理定数を使用。score はモードの指標。
-function simulate(t, conf, sx, sy, record){
+function simulate(t, sx, sy, record){
   const N=GRID, inv=N/L, gxA=t.gx, gyA=t.gy;
-  const GE=conf.g, mu=conf.mu, drag=conf.drag, qd=conf.qdrag, m=conf.mode;
-  const dec=mu*GE*DT, slopeStop=mu*1.02;
   let x=sx, y=sy, vx=0, vy=0, len=0, stop=0, steps=0;
-  let ux=sx, uy=sy;                 // 非ラップ座標
-  let maxD2=0;                      // 直線距離モード
-  let mW=0, mSx=0, mSy=0, mSq=0;    // 慣性半径モード（道のり加重モーメント）
-  const isH = m==='H';
-  const sampX=isH?[sx]:null, sampY=isH?[sy]:null, sampStep=isH&&record?[0]:null;
-  let sampAcc=0, lastHull=0;
-  let xs=null, ys=null, cum=null, cgx=null, cgy=null;
+  let ux=sx, uy=sy;              // 非ラップ座標（ループ跨ぎを積算）
+  let maxD2=0;                   // 直線距離モード: スタートからの最遠到達距離（2乗）
+  let mW=0, mSx=0, mSy=0, mSq=0; // 慣性半径モード: 道のり加重の1次・2次モーメント
+  let xs=null, ys=null, cumL=null, cumD=null, cumG=null, cgx=null, cgy=null;
   if(record){
     xs=new Float32Array(MAX_STEPS+1);
     ys=new Float32Array(MAX_STEPS+1);
-    cum=new Float32Array(MAX_STEPS+1);
-    xs[0]=x; ys[0]=y; cum[0]=0;
-    if(m==='G'){ cgx=new Float32Array(MAX_STEPS+1); cgy=new Float32Array(MAX_STEPS+1); cgx[0]=sx; cgy[0]=sy; }
+    cumL=new Float32Array(MAX_STEPS+1);
+    cumD=new Float32Array(MAX_STEPS+1);
+    cumG=new Float32Array(MAX_STEPS+1);
+    cgx=new Float32Array(MAX_STEPS+1);
+    cgy=new Float32Array(MAX_STEPS+1);
+    xs[0]=x; ys[0]=y;
+    cumL[0]=0; cumD[0]=0; cumG[0]=0; cgx[0]=sx; cgy[0]=sy;
   }
+  // モード別物理: 空気抵抗モードのみ低摩擦・空気抵抗（線形+速度2乗）主体
+  const air = mode==='A';
+  const muC = air ? MU_AIR   : MU;
+  const drg = air ? DRAG_AIR : DRAG;
+  const qd  = air ? QDRAG_AIR : 0;
+  const dec = muC*G*DT;
+  const slopeStop = muC*1.02;
   while(steps<MAX_STEPS){
     // 勾配（双一次補間・ラップ）
     const u=x*inv, v=y*inv;
@@ -679,10 +554,10 @@ function simulate(t, conf, sx, sy, record){
     const w00=(1-fu)*(1-fv), w01=fu*(1-fv), w10=(1-fu)*fv, w11=fu*fv;
     const gx=gxA[r0+i0]*w00+gxA[r0+i1]*w01+gxA[r1+i0]*w10+gxA[r1+i1]*w11;
     const gy=gyA[r0+i0]*w00+gyA[r0+i1]*w01+gyA[r1+i0]*w10+gyA[r1+i1]*w11;
-    // 重力 + 空気抵抗（線形+速度2乗）
+    // 重力 + 空気抵抗（線形、空気抵抗モードでは速度2乗項も）
     const sp0=Math.sqrt(vx*vx+vy*vy);
-    vx+=(-GE*gx-(drag+qd*sp0)*vx)*DT;
-    vy+=(-GE*gy-(drag+qd*sp0)*vy)*DT;
+    vx+=(-G*gx-(drg+qd*sp0)*vx)*DT;
+    vy+=(-G*gy-(drg+qd*sp0)*vy)*DT;
     // クーロン転がり摩擦（速度を反転させない）
     let sp=Math.sqrt(vx*vx+vy*vy);
     if(sp<=dec){ vx=0; vy=0; sp=0; }
@@ -693,68 +568,48 @@ function simulate(t, conf, sx, sy, record){
     if(y<0)y+=L; else if(y>=L)y-=L;
     const ds=sp*DT;
     len+=ds;
-    steps++;
-    // 各指標の更新
     const ddx=ux-sx, ddy=uy-sy, d2=ddx*ddx+ddy*ddy;
     if(d2>maxD2) maxD2=d2;
     mW+=ds; mSx+=ds*ux; mSy+=ds*uy; mSq+=ds*(ux*ux+uy*uy);
-    if(isH){
-      sampAcc+=ds;
-      if(sampAcc>=HULL_SAMPLE_DIST){
-        sampAcc=0;
-        sampX.push(ux); sampY.push(uy);
-        if(record){
-          sampStep.push(steps);
-          lastHull=Math.sqrt(hullMetrics(sampX,sampY).area);
-        }
-      }
-    }
+    steps++;
     if(record){
       xs[steps]=x; ys[steps]=y;
-      if(m==='A') cum[steps]=len;
-      else if(m==='D') cum[steps]=Math.sqrt(maxD2);
-      else if(m==='H') cum[steps]=lastHull;
-      else{ // G
-        if(mW>0){
-          const gx0=mSx/mW, gy0=mSy/mW;
-          cgx[steps]=gx0; cgy[steps]=gy0;
-          const v2=mSq/mW - gx0*gx0 - gy0*gy0;
-          cum[steps]=v2>0?Math.sqrt(v2):0;
-        }else{ cgx[steps]=ux; cgy[steps]=uy; cum[steps]=0; }
-      }
+      cumL[steps]=len;
+      cumD[steps]=Math.sqrt(maxD2);
+      if(mW>0){
+        const gx0=mSx/mW, gy0=mSy/mW;
+        cgx[steps]=gx0; cgy[steps]=gy0;
+        const v2=mSq/mW - gx0*gx0 - gy0*gy0;
+        cumG[steps]=v2>0?Math.sqrt(v2):0;
+      }else{ cgx[steps]=ux; cgy[steps]=uy; cumG[steps]=0; }
     }
-    // 停止判定
+    // 停止判定: 低速 かつ 摩擦で静止可能な緩勾配
     if(sp<STOP_V && Math.sqrt(gx*gx+gy*gy)<=slopeStop){
       if(++stop>=STOP_FRAMES) break;
     } else stop=0;
   }
-  // 最終スコア
-  let score=0, hullArea=0;
-  if(m==='A') score=len;
-  else if(m==='D') score=Math.sqrt(maxD2);
-  else if(m==='H'){ hullArea=hullMetrics(sampX,sampY).area; score=Math.sqrt(hullArea); }
-  else{
-    if(mW>0){
-      const gx0=mSx/mW, gy0=mSy/mW;
-      const v2=mSq/mW - gx0*gx0 - gy0*gy0;
-      score=v2>0?Math.sqrt(v2):0;
-    }
+  const maxD=Math.sqrt(maxD2);
+  let rg=0;
+  if(mW>0){
+    const gx0=mSx/mW, gy0=mSy/mW;
+    const v2=mSq/mW - gx0*gx0 - gy0*gy0;
+    rg=v2>0?Math.sqrt(v2):0;
   }
   return record
-    ? {score, len, hullArea, n:steps, xs, ys, cum, cgx, cgy, sampX, sampY, sampStep}
-    : {score, len, n:steps};
+    ? {len,maxD,rg,n:steps,xs,ys,cumL,cumD,cumG,cgx,cgy}
+    : {len,maxD,rg,n:steps};
 }
 
-// ---------- 理論値探索 ----------
+// ---------- 理論値探索（グリッド全域 → 上位付近を段階的に絞り込み） ----------
 const wrapc = x => { x%=L; return x<0 ? x+L : x; };
+// setTimeout はバックグラウンドでスロットリングされるため MessageChannel で譲る
 const yieldNow = () => new Promise(res=>{
   const ch=new MessageChannel();
   ch.port1.onmessage=()=>res();
   ch.port2.postMessage(0);
 });
-async function computeTheoretical(t, conf, onP, token){
+async function computeTheoretical(t, onP, token){
   const n1=40, cell=L/n1;
-  const valid=(x,y)=> !conf.noHigh || t.heightAt(x,y) < conf.hTh;
   const results=[];
   let best={len:-1,x:0,y:0};
   async function runList(list, base, span){
@@ -763,20 +618,17 @@ async function computeTheoretical(t, conf, onP, token){
       const t0=performance.now();
       while(idx<list.length && performance.now()-t0<14){
         const p=list[idx++];
-        const sc=simulate(t,conf,p[0],p[1],false).score;
+        const sc=metric(simulate(t,p[0],p[1],false));
         results.push([sc,p[0],p[1]]);
         if(sc>best.len) best={len:sc,x:p[0],y:p[1]};
       }
-      onP(base+span*idx/Math.max(1,list.length));
+      onP(base+span*idx/list.length);
       await yieldNow();
       if(token.cancelled) throw new Error('cancelled');
     }
   }
   const pts1=[];
-  for(let j=0;j<n1;j++)for(let i=0;i<n1;i++){
-    const px=(i+0.5)*cell, py=(j+0.5)*cell;
-    if(valid(px,py)) pts1.push([px,py]);
-  }
+  for(let j=0;j<n1;j++)for(let i=0;i<n1;i++) pts1.push([(i+0.5)*cell,(j+0.5)*cell]);
   await runList(pts1, 0, 0.75);
   results.sort((a,b)=>b[0]-a[0]);
   const tops=results.slice(0,12);
@@ -784,15 +636,13 @@ async function computeTheoretical(t, conf, onP, token){
   for(const tp of tops)
     for(let dj=-2;dj<=2;dj++)for(let di=-2;di<=2;di++){
       if(di===0&&dj===0) continue;
-      const px=wrapc(tp[1]+di*cell/5), py=wrapc(tp[2]+dj*cell/5);
-      if(valid(px,py)) pts2.push([px,py]);
+      pts2.push([wrapc(tp[1]+di*cell/5), wrapc(tp[2]+dj*cell/5)]);
     }
   await runList(pts2, 0.75, 0.20);
   const pts3=[];
   for(let dj=-3;dj<=3;dj++)for(let di=-3;di<=3;di++){
     if(di===0&&dj===0) continue;
-    const px=wrapc(best.x+di*cell/25), py=wrapc(best.y+dj*cell/25);
-    if(valid(px,py)) pts3.push([px,py]);
+    pts3.push([wrapc(best.x+di*cell/25), wrapc(best.y+dj*cell/25)]);
   }
   await runList(pts3, 0.95, 0.05);
   return {len:best.len, x:best.x, y:best.y};
@@ -814,11 +664,11 @@ const trailCanvas=document.createElement('canvas'); const tctx=setupCanvas(trail
 
 // ---------- ゲーム状態 ----------
 let screenMode='select';
-let stage=1, terrain=null, conf=null, theo=null, run=null, calcToken=null;
+let stage=1, terrain=null, theo=null, run=null, calcToken=null;
 let showColor=true, showContour=true, speed=4;
 let modalOpen=false;
-let toastTimer=null;
 
+// ---------- 画面切替 ----------
 function showScreen(name){
   screenMode=name;
   $('screen-select').classList.toggle('hidden', name!=='select');
@@ -826,58 +676,35 @@ function showScreen(name){
   $('btnBack').classList.toggle('hidden', name!=='game');
   $('stageInfo').classList.toggle('hidden', name!=='game');
 }
-function toast(msg){
-  const el=$('toast');
-  el.textContent=msg;
-  el.classList.remove('hidden');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>el.classList.add('hidden'), 1600);
-}
 
 // ---------- ステージ選択画面 ----------
-function starsHTML(n){
+function starsHTML(n, cls){
   let s='';
   for(let i=0;i<3;i++) s+=`<span class="${i<n?'on':'off'}">★</span>`;
   return s;
 }
 function renderSelect(){
-  const total=totalStars(), unlocked=unlockedCount();
-  $('starsTotal').textContent=total;
-  $('unlockedInfo').textContent=unlocked;
-  if(unlocked>=STAGES){ $('nextNeedWrap').textContent='（全ステージ解放済み！）'; }
-  else{
-    const need=STARS_PER_UNLOCK*(unlocked-FREE_STAGES+1)-total;
-    $('nextNeedWrap').innerHTML=`（次の解放まであと <b id="nextNeed">${need}</b> 個）`;
-  }
   const g=$('stageGrid'); g.innerHTML='';
+  const total=totalStars(), unl=unlockedCount();
+  $('starTotal').textContent=`★ 合計 ${total}`;
   for(let n=1;n<=STAGES;n++){
-    const cfg=stageConfig(n);
-    const mi=MODE_INFO[cfg.mode];
+    const mi=MODE_INFO[stageMode(n)];
     const card=document.createElement('div');
-    const isUnlocked = n<=unlocked;
-    card.className='card'+(isUnlocked?'':' locked');
+    const unlocked = n<=unl;
+    card.className='card'+(unlocked?'':' locked');
     const st=save.stars[n]||0;
-    const bestSc=save.best[n];
-    const condIcons=cfg.conds.map(c=>COND_INFO[c].icon).join('');
-    if(isUnlocked){
+    if(unlocked){
+      const bestLen=save.best[n];
       let bestLine='&nbsp;';
-      if(bestSc!==undefined){
+      if(bestLen!==undefined){
         const cached=loadTheoRaw(n);
-        bestLine = cached ? `ベスト ${(bestSc/cached.len*100).toFixed(1)}%` : `ベスト ${bestSc.toFixed(1)}`;
+        bestLine = cached ? `ベスト ${(bestLen/cached.len*100).toFixed(1)}%` : `ベスト ${bestLen.toFixed(1)}`;
       }
-      card.innerHTML=`<div class="num">Stage ${n}</div>
-        <div class="modechip">${mi.icon} ${mi.name}</div>
-        <div class="conds">${condIcons||'&nbsp;'}</div>
-        <div class="stars">${starsHTML(st)}</div>
-        <div class="best">${bestLine}</div>`;
+      card.innerHTML=`<div class="mode-tag">${mi.icon} ${mi.short}</div><div class="num">Stage ${n}</div><div class="stars">${starsHTML(st)}</div><div class="best">${bestLine}</div>`;
       card.addEventListener('click',()=>enterStage(n));
     }else{
-      const req=STARS_PER_UNLOCK*(n-FREE_STAGES);
-      card.innerHTML=`<div class="num">Stage ${n}</div>
-        <div class="modechip">${mi.icon} ${mi.name}</div>
-        <div class="conds">${condIcons||'&nbsp;'}</div>
-        <div style="font-size:18px">🔒</div>
-        <div class="best">⭐ 合計${req}個で解放</div>`;
+      const need=2*(n-3);
+      card.innerHTML=`<div class="mode-tag">${mi.icon} ${mi.short}</div><div class="num">Stage ${n}</div><div class="lock">🔒</div><div class="best">★${need}個で解放（あと${need-total}）</div>`;
     }
     g.appendChild(card);
   }
@@ -912,40 +739,17 @@ function buildBackground(){
       bgctx.stroke();
     }
   }
-  // 入山規制エリアの表示（赤いオーバーレイ + 境界線）
-  if(conf && conf.noHigh){
-    const N=GRID, h=terrain.h, th=conf.hTh;
-    const oc=document.createElement('canvas'); oc.width=N; oc.height=N;
-    const octx=oc.getContext('2d');
-    const im=octx.createImageData(N,N);
-    for(let i=0;i<N*N;i++){
-      if(h[i]>=th){
-        const p=i*4;
-        im.data[p]=255; im.data[p+1]=42; im.data[p+2]=42; im.data[p+3]=72;
-      }
-    }
-    octx.putImageData(im,0,0);
-    bgctx.imageSmoothingEnabled=true;
-    bgctx.drawImage(oc,0,0,CANVAS_SIZE,CANVAS_SIZE);
-    const border=terrain.marchingSegs([th])[0];
-    bgctx.strokeStyle='rgba(255,60,50,.85)';
-    bgctx.lineWidth=1.8;
-    bgctx.beginPath();
-    for(let k=0;k<border.length;k+=4){
-      bgctx.moveTo(border[k]*SCALE,   border[k+1]*SCALE);
-      bgctx.lineTo(border[k+2]*SCALE, border[k+3]*SCALE);
-    }
-    bgctx.stroke();
-  }
 }
 function buildLegend(){
   const lc=$('legend');
   lc.width=256; lc.height=12;
   const c=lc.getContext('2d');
   const im=c.createImageData(256,12);
-  for(let x=0;x<256;x++)for(let y=0;y<12;y++){
-    const p=(y*256+x)*4;
-    im.data[p]=COLOR_LUT[x*3]; im.data[p+1]=COLOR_LUT[x*3+1]; im.data[p+2]=COLOR_LUT[x*3+2]; im.data[p+3]=255;
+  for(let x=0;x<256;x++){
+    for(let y=0;y<12;y++){
+      const p=(y*256+x)*4;
+      im.data[p]=COLOR_LUT[x*3]; im.data[p+1]=COLOR_LUT[x*3+1]; im.data[p+2]=COLOR_LUT[x*3+2]; im.data[p+3]=255;
+    }
   }
   c.putImageData(im,0,0);
 }
@@ -980,60 +784,54 @@ function drawTrailRange(from,to){
   tctx.strokeStyle='#e5322d'; tctx.lineWidth=1.8; tctx.stroke(path);
 }
 
-// 破線サークルを9オフセット（ラップ）で描く共通処理
-function drawWrapCircle(cxw, cyw, rr, withCenterDot){
-  mctx.save();
-  mctx.setLineDash([6,5]);
-  for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){
-    const cx=(cxw+ox*L)*SCALE, cy=(cyw+oy*L)*SCALE;
-    if(cx+rr<0||cy+rr<0||cx-rr>CANVAS_SIZE||cy-rr>CANVAS_SIZE) continue;
-    mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
-    mctx.lineWidth=3; mctx.strokeStyle='rgba(18,16,22,.4)'; mctx.stroke();
-    mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
-    mctx.lineWidth=1.3; mctx.strokeStyle='rgba(255,255,255,.9)'; mctx.stroke();
-    if(withCenterDot){
-      mctx.setLineDash([]);
-      mctx.beginPath(); mctx.arc(cx,cy,2.2,0,Math.PI*2);
-      mctx.fillStyle='rgba(255,255,255,.9)'; mctx.fill();
-      mctx.setLineDash([6,5]);
-    }
-  }
-  mctx.restore();
-}
-
 // ---------- 毎フレーム合成 ----------
 function render(){
   mctx.clearRect(0,0,CANVAS_SIZE,CANVAS_SIZE);
   mctx.drawImage(bgCanvas,0,0,CANVAS_SIZE,CANVAS_SIZE);
   mctx.drawImage(trailCanvas,0,0,CANVAS_SIZE,CANVAS_SIZE);
-  if(run){
+  if(run && mode==='D'){
+    // 直線距離サークル（中心＝スタート地点、半径＝現在の最遠到達距離）
     const ci=Math.min(run.n, Math.floor(run.cursorF));
-    const m=conf.mode;
-    if(m==='D'){
-      // スタート中心・現在の最大直線距離の円
-      const rr=run.cum[ci]*SCALE;
-      if(rr>2) drawWrapCircle(run.xs[0], run.ys[0], rr, false);
-    }else if(m==='G'){
-      // 重心中心・慣性半径の円
-      const rr=run.cum[ci]*SCALE;
-      if(rr>2) drawWrapCircle(((run.cgx[ci]%L)+L)%L, ((run.cgy[ci]%L)+L)%L, rr, true);
-    }else if(m==='H' && run.hullPts && run.hullPts.length>=3){
-      // 凸包の多角形（非ラップ座標を9オフセットで描画）
+    const rr=run.cumD[ci]*SCALE;
+    if(rr>2){
+      const sx0=run.xs[0], sy0=run.ys[0];
       mctx.save();
       mctx.setLineDash([6,5]);
       for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){
-        const p0=run.hullPts[0];
-        const path=new Path2D();
-        path.moveTo((p0[0]+ox*L)*SCALE,(p0[1]+oy*L)*SCALE);
-        for(let k=1;k<run.hullPts.length;k++){
-          path.lineTo((run.hullPts[k][0]+ox*L)*SCALE,(run.hullPts[k][1]+oy*L)*SCALE);
-        }
-        path.closePath();
-        mctx.lineWidth=3; mctx.strokeStyle='rgba(18,16,22,.4)'; mctx.stroke(path);
-        mctx.lineWidth=1.3; mctx.strokeStyle='rgba(255,255,255,.9)'; mctx.stroke(path);
+        const cx=(sx0+ox*L)*SCALE, cy=(sy0+oy*L)*SCALE;
+        if(cx+rr<0||cy+rr<0||cx-rr>CANVAS_SIZE||cy-rr>CANVAS_SIZE) continue;
+        mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
+        mctx.lineWidth=3; mctx.strokeStyle='rgba(18,16,22,.4)'; mctx.stroke();
+        mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
+        mctx.lineWidth=1.3; mctx.strokeStyle='rgba(255,255,255,.9)'; mctx.stroke();
       }
       mctx.restore();
     }
+  }
+  if(run && mode==='G'){
+    // 慣性半径サークル（中心＝軌跡の重心、半径＝Rg）
+    const ci=Math.min(run.n, Math.floor(run.cursorF));
+    const rr=run.cumG[ci]*SCALE;
+    if(rr>2){
+      const gx0=((run.cgx[ci]%L)+L)%L, gy0=((run.cgy[ci]%L)+L)%L;
+      mctx.save();
+      mctx.setLineDash([6,5]);
+      for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){
+        const cx=(gx0+ox*L)*SCALE, cy=(gy0+oy*L)*SCALE;
+        if(cx+rr<0||cy+rr<0||cx-rr>CANVAS_SIZE||cy-rr>CANVAS_SIZE) continue;
+        mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
+        mctx.lineWidth=3; mctx.strokeStyle='rgba(18,16,22,.4)'; mctx.stroke();
+        mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
+        mctx.lineWidth=1.3; mctx.strokeStyle='rgba(255,255,255,.9)'; mctx.stroke();
+        mctx.setLineDash([]);
+        mctx.beginPath(); mctx.arc(cx,cy,2.2,0,Math.PI*2);
+        mctx.fillStyle='rgba(255,255,255,.9)'; mctx.fill();
+        mctx.setLineDash([6,5]);
+      }
+      mctx.restore();
+    }
+  }
+  if(run){
     // スタート地点
     const sx=run.xs[0]*SCALE, sy=run.ys[0]*SCALE;
     mctx.beginPath(); mctx.arc(sx,sy,5,0,Math.PI*2);
@@ -1041,7 +839,8 @@ function render(){
     mctx.beginPath(); mctx.arc(sx,sy,1.8,0,Math.PI*2);
     mctx.fillStyle='#fff'; mctx.fill();
     // 玉
-    const bx=run.xs[ci]*SCALE, by=run.ys[ci]*SCALE;
+    const c=Math.min(run.n, Math.floor(run.cursorF));
+    const bx=run.xs[c]*SCALE, by=run.ys[c]*SCALE;
     mctx.beginPath(); mctx.arc(bx+1.2,by+1.6,5.2,0,Math.PI*2);
     mctx.fillStyle='rgba(0,0,0,.3)'; mctx.fill();
     mctx.beginPath(); mctx.arc(bx,by,5,0,Math.PI*2);
@@ -1077,22 +876,15 @@ function updateHUD(){
 async function enterStage(n){
   if(calcToken) calcToken.cancelled=true;
   stage=n;
-  conf=stageConfig(n);
+  mode=stageMode(n);   // このステージの評価モード（物理も連動）
   showScreen('game');
-  const mi=MODE_INFO[conf.mode];
   $('stageNum').textContent=n;
   $('seedInfo').textContent='SEED '+stageSeed(n).toString(16).toUpperCase();
-  $('modeInfo').textContent=`${mi.icon} ${mi.name}モード`;
-  $('stModeV').textContent=`${mi.icon} ${mi.name}`;
-  $('stCondV').innerHTML = conf.conds.length
-    ? conf.conds.map(c=>`${COND_INFO[c].icon} ${COND_INFO[c].name}`).join('<br>')
-    : 'なし';
-  $('hudNowLabel').textContent=mi.now;
-  let hint=`💡 ${mi.hint}`;
-  for(const c of conf.conds) hint+=`<br>${COND_INFO[c].icon} <b>${COND_INFO[c].name}</b>：${COND_INFO[c].desc}。`;
-  $('hintBox').innerHTML=hint;
+  const mi=MODE_INFO[mode];
+  $('modeInfo').textContent = mi.name;
+  $('hudNowLabel').textContent = mi.now;
+  $('hintBox').innerHTML = mi.hint + '<br>クリアで得た★は合計され、2個ごとに次のステージが解放されます。';
   terrain=new Terrain(n);
-  conf.hTh = terrain.minH + conf.highFrac*(terrain.maxH-terrain.minH);
   theo=null; run=null;
   clearTrail();
   buildBackground();
@@ -1110,7 +902,7 @@ async function enterStage(n){
   const token={cancelled:false};
   calcToken=token;
   try{
-    const res=await computeTheoretical(terrain, conf, p=>{ $('calcBar').style.width=(p*100).toFixed(1)+'%'; }, token);
+    const res=await computeTheoretical(terrain, p=>{ $('calcBar').style.width=(p*100).toFixed(1)+'%'; }, token);
     if(token.cancelled) return;
     theo=res;
     lsSet(theoKey(n), JSON.stringify(res));
@@ -1126,63 +918,53 @@ cv.addEventListener('pointerdown', e=>{
   const r=cv.getBoundingClientRect();
   const wx=wrapc((e.clientX-r.left)/r.width*L);
   const wy=wrapc((e.clientY-r.top)/r.height*L);
-  if(conf.noHigh && terrain.heightAt(wx,wy)>=conf.hTh){
-    toast('⛰ 入山規制区域には置けません');
-    return;
-  }
   startRun(wx,wy);
 });
 function startRun(wx,wy){
   clearTrail();
-  const r=simulate(terrain,conf,wx,wy,true);
+  const r=simulate(terrain,wx,wy,true);
   run=r;
+  run.cum = mode==='A' ? r.cumL : mode==='D' ? r.cumD : r.cumG; // 再生HUD・スコアはモードの指標
   run.cursorF=0; run.drawnIdx=0; run.finished=false;
-  if(conf.mode==='H'){
-    run.hullPtr=0; run.hullInX=[]; run.hullInY=[]; run.hullPts=[];
-  }
 }
 
 // ---------- 結果 ----------
 function onRunFinished(){
-  const score=run.cum[run.n];
-  const pct=roundPct(score/theo.len*100);
+  const len=run.cum[run.n];
+  const pct=roundPct(len/theo.len*100);
   const prevBest=save.best[stage]||0;
-  const newRecord=score>prevBest;
-  const oldUnlocked=unlockedCount();
-  if(newRecord) save.best[stage]=score;
+  const newRecord=len>prevBest;
+  if(newRecord) save.best[stage]=len;
   const bestPct=roundPct((save.best[stage])/theo.len*100);
   const stars=calcStars(bestPct);
   const prevStars=save.stars[stage]||0;
+  const prevUnl=unlockedCount();
   if(stars>prevStars) save.stars[stage]=stars;
-  const newUnlocked=unlockedCount();
+  const newUnl=unlockedCount();
+  let unlockMsg='';
+  if(newUnl>prevUnl){
+    const ul=[]; for(let k=prevUnl+1;k<=newUnl;k++) ul.push(k);
+    unlockMsg=`🎉 Stage ${ul.join('・')} を解放！`;
+  }
   persist();
   // モーダル表示
-  const mi=MODE_INFO[conf.mode];
-  $('mLenLabel').textContent=mi.score;
-  $('mLen').textContent=fmt(score);
+  $('mLenLabel').textContent = MODE_INFO[mode].score;
+  $('mExtra').textContent = mode==='D' ? `（マップ約${(len/L).toFixed(1)}枚分）` : '';
+  $('mLen').textContent=fmt(len);
   $('mPct').textContent=pct;
-  $('mExtra').textContent =
-    conf.mode==='H' ? `（凸包面積 ${run.hullArea.toFixed(0)}）` :
-    conf.mode==='D' ? `（マップ約${(score/L).toFixed(2)}枚分）` :
-    conf.mode==='A' ? `（マップ${(score/L).toFixed(1)}枚分の道のり）` : '';
   $('mBestPct').textContent=bestPct;
   $('mStars').innerHTML=starsHTML(stars);
   let badges='';
   if(newRecord) badges+='<span class="badge gold">🏆 ベスト更新！</span>';
-  if(stars>prevStars) badges+=`<span class="badge gold">⭐ +${stars-prevStars}</span>`;
-  if(newUnlocked>oldUnlocked){
-    const list = newUnlocked-oldUnlocked===1 ? `Stage ${newUnlocked}` : `Stage ${oldUnlocked+1}〜${newUnlocked}`;
-    badges+=`<span class="badge">🔓 ${list} を解放！</span>`;
-  }
+  if(stars>prevStars) badges+=`<span class="badge gold">★ +${stars-prevStars}</span>`;
+  if(unlockMsg) badges+=`<span class="badge">${unlockMsg}</span>`;
   $('mBadges').innerHTML=badges;
   const total=totalStars();
-  if(newUnlocked>=STAGES){
-    $('mUnlockNote').textContent=`⭐ 合計 ${total}個 ─ 全ステージ解放済み！`;
-  }else{
-    const need=STARS_PER_UNLOCK*(newUnlocked-FREE_STAGES+1)-total;
-    $('mUnlockNote').textContent=`⭐ 合計 ${total}個 ／ 解放済み ${newUnlocked}/${STAGES} ─ あと${need}個で Stage ${newUnlocked+1} が解放`;
-  }
-  $('mNext').disabled = !(stage<STAGES && stage+1<=newUnlocked);
+  $('mUnlockNote').textContent =
+    newUnl>=STAGES
+      ? `全ステージ解放済み！ 合計★${total}`
+      : `合計★${total} ／ 次の解放（Stage ${newUnl+1}）まで あと★${2*(newUnl+1-3)-total}個`;
+  $('mNext').disabled = !(stage<STAGES && stage+1<=newUnl);
   modalOpen=true;
   $('modalWrap').classList.remove('hidden');
   updateHUD();
@@ -1190,6 +972,7 @@ function onRunFinished(){
 function closeModal(){ modalOpen=false; $('modalWrap').classList.add('hidden'); }
 
 // ---------- メインループ ----------
+// ロジック更新は rAF と interval の両方から呼ぶ（タブ非表示中も進行・完了する）
 let lastAdv=performance.now();
 function advance(){
   const now=performance.now();
@@ -1198,20 +981,7 @@ function advance(){
   if(run && !run.finished){
     run.cursorF=Math.min(run.n, run.cursorF + dtr*120*speed);
     const cur=Math.floor(run.cursorF);
-    if(cur>run.drawnIdx){
-      drawTrailRange(run.drawnIdx,cur);
-      // 凸包モード: 通過したサンプルを取り込んで凸包を更新
-      if(conf.mode==='H' && run.sampStep){
-        let changed=false;
-        while(run.hullPtr<run.sampStep.length && run.sampStep[run.hullPtr]<=cur){
-          run.hullInX.push(run.sampX[run.hullPtr]);
-          run.hullInY.push(run.sampY[run.hullPtr]);
-          run.hullPtr++; changed=true;
-        }
-        if(changed) run.hullPts=hullMetrics(run.hullInX,run.hullInY).pts;
-      }
-      run.drawnIdx=cur;
-    }
+    if(cur>run.drawnIdx){ drawTrailRange(run.drawnIdx,cur); run.drawnIdx=cur; }
     $('hudNow').textContent=fmt(run.cum[cur]) + (theo?` (${roundPct(run.cum[cur]/theo.len*100)}%)`:'');
     if(cur>=run.n){ run.finished=true; onRunFinished(); }
   }
@@ -1219,7 +989,7 @@ function advance(){
 function frame(){
   requestAnimationFrame(frame);
   advance();
-  if(screenMode==='game') render();
+  render();
 }
 requestAnimationFrame(frame);
 setInterval(()=>{ if(document.hidden) advance(); }, 100);
@@ -1261,9 +1031,6 @@ $('mNext').addEventListener('click',()=>{
   closeModal();
   if(stage<STAGES && stage+1<=unlockedCount()) enterStage(stage+1);
 });
-$('btnHelp').addEventListener('click',()=>{ $('helpWrap').classList.remove('hidden'); });
-$('helpClose').addEventListener('click',()=>{ $('helpWrap').classList.add('hidden'); });
-$('helpWrap').addEventListener('click',e=>{ if(e.target===$('helpWrap')) $('helpWrap').classList.add('hidden'); });
 let resetArmed=false;
 $('btnReset').addEventListener('click',()=>{
   if(!resetArmed){
@@ -1272,7 +1039,7 @@ $('btnReset').addEventListener('click',()=>{
     setTimeout(()=>{ resetArmed=false; $('btnReset').textContent='進捗をリセット'; }, 3000);
     return;
   }
-  save={stars:{},best:{}};
+  save={stars:{}, best:{}};
   persist();
   renderSelect();
   resetArmed=false;
@@ -1284,10 +1051,9 @@ renderSelect();
 showScreen('select');
 
 // デバッグ用フック
-window.__game={ get terrain(){return terrain}, get conf(){return conf}, get theo(){return theo},
-  get save(){return save}, get run(){return run},
-  simulate, Terrain, stageConfig, enterStage, render, advance, hullMetrics,
-  sim:(x,y,rec)=>simulate(terrain,conf,x,y,rec) };
+window.__game={ get terrain(){return terrain}, get theo(){return theo}, get save(){return save},
+  get mode(){return mode}, stageMode, totalStars, unlockedCount,
+  simulate, Terrain, enterStage, render, advance, get run(){return run} };
 </script>
 </body>
 </html>
