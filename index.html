@@ -146,11 +146,11 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
   <p class="tagline">地形のどこかに玉を置いて、玉の転がりを最大化しよう。</p>
   <div class="modebar">
     <button id="modeL" class="btn">🧵 軌跡モード</button>
-    <button id="modeD" class="btn">🚀 飛距離モード</button>
+    <button id="modeD" class="btn">🚀 行動範囲モード</button>
     <span id="modeDesc" class="modedesc"></span>
   </div>
   <div class="rulebox">
-    <div class="rule-line">🎮 <span class="em">モード</span>：<b>軌跡</b>＝転がった道のりの合計 ／ <b>飛距離</b>＝スタート地点からの直線距離（最遠到達点・ループ跨ぎは積算）。進捗と理論値はモード別に記録されます。</div>
+    <div class="rule-line">🎮 <span class="em">モード</span>：<b>軌跡</b>＝転がった道のりの合計 ／ <b>行動範囲</b>＝軌跡全体がちょうど収まる長方形の対角線の長さ。大きく動けばスタート地点に戻ってもOK（ループ跨ぎは積算）。進捗と理論値はモード別に記録されます。</div>
     <div class="rule-line">🔓 <span class="em">アンロック仕様</span>：ステージ n をクリア（達成率 <b>70%</b> 以上 ＝ ★1）すると、ステージ <b>n+1</b> と <b>n+2</b> の <b>2つ</b>がアンロックされます。</div>
     <div class="rule-line">⭐ 評価：理論値の <b>70%</b> で ★☆☆ ／ <b>90%</b> で ★★☆ ／ <b>95%</b> で ★★★</div>
     <div class="rule-line">🔁 マップは上下左右がループ（トーラス構造）。玉は摩擦により必ず停止します。</div>
@@ -160,7 +160,7 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
     <summary>遊び方</summary>
     <ul>
       <li>マップをクリックすると、その位置に玉が置かれ、重力で低い方へ転がり始めます。</li>
-      <li><b>軌跡モード</b>：停止するまでの<b>道のりの長さ</b>がスコア。<b>飛距離モード</b>：スタート地点から<b>最も遠くに到達した直線距離</b>がスコア（マップを何周しても積算されます）。</li>
+      <li><b>軌跡モード</b>：停止するまでの<b>道のりの長さ</b>がスコア。<b>行動範囲モード</b>：軌跡全体がちょうど収まる長方形の<b>対角線の長さ</b>がスコア。大きな動きが評価され、スタート地点付近へ戻っても遠出した分はそのまま残ります（マップを何周しても積算）。プレイ中は範囲が破線の枠で表示されます。</li>
       <li>何度でも置き直せます（モードごとにベストが記録されます）。</li>
       <li><b>理論値</b>＝そのステージで可能な最長軌跡（ステージ読み込み時に全域探索で自動算出。初回のみ数秒）。</li>
       <li>「カラー」「等高線」ボタンで高さの表示方法を切り替えられます。明るい色ほど高い場所です。</li>
@@ -296,17 +296,22 @@ function emptyProg(){ return { unlocked:{1:true}, stars:{}, best:{} }; }
 function loadSave(){
   try{
     const s = JSON.parse(lsGet(SAVE_KEY));
-    if(s && s.modes) return s;
+    if(s && s.modes){
+      // 旧・飛距離モード(D)は評価指標変更のため行動範囲モード(R)を新規に用意
+      if(!s.modes.R) s.modes.R = emptyProg();
+      if(s.mode==='D') s.mode='R';
+      return s;
+    }
     // 旧形式（モードなし）→ 軌跡モードの進捗として引き継ぐ
-    if(s && s.unlocked) return { mode:'L', modes:{ L:s, D:emptyProg() } };
+    if(s && s.unlocked) return { mode:'L', modes:{ L:s, R:emptyProg() } };
   }catch(e){}
-  return { mode:'L', modes:{ L:emptyProg(), D:emptyProg() } };
+  return { mode:'L', modes:{ L:emptyProg(), R:emptyProg() } };
 }
 function persist(){ lsSet(SAVE_KEY, JSON.stringify(save)); }
-// mode: 'L'=軌跡（道のり合計） / 'D'=飛距離（スタートからの最遠直線距離）
-let mode = save.mode==='D' ? 'D' : 'L';
+// mode: 'L'=軌跡（道のり合計） / 'R'=行動範囲（軌跡のバウンディングボックス対角線長）
+let mode = save.mode==='R' ? 'R' : 'L';
 function prog(){ return save.modes[mode]; }
-const metric = r => mode==='L' ? r.len : r.maxD;
+const metric = r => mode==='L' ? r.len : r.range;
 const theoKey = n => `longroll_${VERSION}_theo_${mode}_${n}`;
 function loadTheoRaw(n){
   let v = lsGet(theoKey(n));
@@ -474,14 +479,17 @@ const COLOR_LUT = (()=>{
 function simulate(t, sx, sy, record){
   const N=GRID, inv=N/L, gxA=t.gx, gyA=t.gy;
   let x=sx, y=sy, vx=0, vy=0, len=0, stop=0, steps=0;
-  let ux=sx, uy=sy, maxD2=0; // 非ラップ座標での最遠到達距離（飛距離モード用）
-  let xs=null, ys=null, cumL=null, cumD=null;
+  let ux=sx, uy=sy;                    // 非ラップ座標（ループ跨ぎを積算）
+  let mnx=sx, mxx=sx, mny=sy, mxy=sy;  // 軌跡のバウンディングボックス（行動範囲モード用）
+  let xs=null, ys=null, uxs=null, uys=null, cumL=null, cumR=null;
   if(record){
     xs=new Float32Array(MAX_STEPS+1);
     ys=new Float32Array(MAX_STEPS+1);
+    uxs=new Float32Array(MAX_STEPS+1);
+    uys=new Float32Array(MAX_STEPS+1);
     cumL=new Float32Array(MAX_STEPS+1);
-    cumD=new Float32Array(MAX_STEPS+1);
-    xs[0]=x; ys[0]=y; cumL[0]=0; cumD[0]=0;
+    cumR=new Float32Array(MAX_STEPS+1);
+    xs[0]=x; ys[0]=y; uxs[0]=ux; uys[0]=uy; cumL[0]=0; cumR[0]=0;
   }
   const dec=MU*G*DT;
   while(steps<MAX_STEPS){
@@ -507,17 +515,23 @@ function simulate(t, sx, sy, record){
     if(x<0)x+=L; else if(x>=L)x-=L;
     if(y<0)y+=L; else if(y>=L)y-=L;
     len+=sp*DT;
-    const ddx=ux-sx, ddy=uy-sy, d2=ddx*ddx+ddy*ddy;
-    if(d2>maxD2) maxD2=d2;
+    if(ux<mnx)mnx=ux; else if(ux>mxx)mxx=ux;
+    if(uy<mny)mny=uy; else if(uy>mxy)mxy=uy;
     steps++;
-    if(record){ xs[steps]=x; ys[steps]=y; cumL[steps]=len; cumD[steps]=Math.sqrt(maxD2); }
+    if(record){
+      xs[steps]=x; ys[steps]=y; uxs[steps]=ux; uys[steps]=uy;
+      cumL[steps]=len;
+      const rw=mxx-mnx, rh=mxy-mny;
+      cumR[steps]=Math.sqrt(rw*rw+rh*rh);
+    }
     // 停止判定: 低速 かつ 摩擦で静止可能な緩勾配
     if(sp<STOP_V && Math.sqrt(gx*gx+gy*gy)<=SLOPE_STOP){
       if(++stop>=STOP_FRAMES) break;
     } else stop=0;
   }
-  const maxD=Math.sqrt(maxD2);
-  return record ? {len,maxD,n:steps,xs,ys,cumL,cumD} : {len,maxD,n:steps};
+  const rw=mxx-mnx, rh=mxy-mny;
+  const range=Math.sqrt(rw*rw+rh*rh);
+  return record ? {len,range,n:steps,xs,ys,uxs,uys,cumL,cumR} : {len,range,n:steps};
 }
 
 // ---------- 理論値探索（グリッド全域 → 上位付近を段階的に絞り込み） ----------
@@ -709,6 +723,19 @@ function render(){
   mctx.clearRect(0,0,CANVAS_SIZE,CANVAS_SIZE);
   mctx.drawImage(bgCanvas,0,0,CANVAS_SIZE,CANVAS_SIZE);
   mctx.drawImage(trailCanvas,0,0,CANVAS_SIZE,CANVAS_SIZE);
+  if(run && run.pb && mode==='R'){
+    // 行動範囲ボックス（非ラップ座標。ラップ表示のため±Lオフセットでも描く）
+    const p=run.pb, rw=(p.mxx-p.mnx)*SCALE, rh=(p.mxy-p.mny)*SCALE;
+    mctx.save();
+    mctx.setLineDash([7,5]);
+    for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){
+      const rx=(p.mnx+ox*L)*SCALE, ry=(p.mny+oy*L)*SCALE;
+      if(rx>CANVAS_SIZE||ry>CANVAS_SIZE||rx+rw<0||ry+rh<0) continue;
+      mctx.lineWidth=3;   mctx.strokeStyle='rgba(18,16,22,.45)'; mctx.strokeRect(rx,ry,rw,rh);
+      mctx.lineWidth=1.4; mctx.strokeStyle='rgba(255,255,255,.95)'; mctx.strokeRect(rx,ry,rw,rh);
+    }
+    mctx.restore();
+  }
   if(run){
     // スタート地点
     const sx=run.xs[0]*SCALE, sy=run.ys[0]*SCALE;
@@ -757,11 +784,11 @@ async function enterStage(n){
   showScreen('game');
   $('stageNum').textContent=n;
   $('seedInfo').textContent='SEED '+stageSeed(n).toString(16).toUpperCase();
-  $('modeInfo').textContent = mode==='L' ? '🧵 軌跡モード' : '🚀 飛距離モード';
-  $('hudNowLabel').textContent = mode==='L' ? '今回の軌跡長' : '今回の飛距離';
+  $('modeInfo').textContent = mode==='L' ? '🧵 軌跡モード' : '🚀 行動範囲モード';
+  $('hudNowLabel').textContent = mode==='L' ? '今回の軌跡長' : '今回の行動範囲';
   $('hintBox').innerHTML = mode==='L'
     ? '💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>高い所から谷を伝って長く走るルートを探そう。勢い余って峠を越えると大きく距離を稼げます。'
-    : '💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>スタートからの<b>直線距離</b>で評価。一方向に長く下る谷筋や、勢いで峠を越えて遠くへ抜けるルートを探そう。近くの盆地でぐるぐる回っても伸びません。';
+    : '💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>破線の枠＝これまでの行動範囲。枠の対角線が伸びる（＝新しい方向へ大きく動く）ほど高評価。遠くへ行って戻ってきても遠出した分は残ります。';
   terrain=new Terrain(n);
   theo=null; run=null;
   clearTrail();
@@ -802,7 +829,9 @@ function startRun(wx,wy){
   clearTrail();
   const r=simulate(terrain,wx,wy,true);
   run=r;
-  run.cum = mode==='L' ? r.cumL : r.cumD; // 再生HUD・スコアはモードの指標を使う
+  run.cum = mode==='L' ? r.cumL : r.cumR; // 再生HUD・スコアはモードの指標を使う
+  // 再生中の行動範囲ボックス（カーソル位置までの範囲を保持）
+  run.pb={mnx:r.uxs[0], mxx:r.uxs[0], mny:r.uys[0], mxy:r.uys[0]};
   run.cursorF=0; run.drawnIdx=0; run.finished=false;
 }
 
@@ -828,8 +857,8 @@ function onRunFinished(){
   }
   persist();
   // モーダル表示
-  $('mLenLabel').textContent = mode==='L' ? '軌跡の長さ' : '飛距離';
-  $('mExtra').textContent = mode==='D' ? `（マップ約${(len/L).toFixed(1)}枚分）` : '';
+  $('mLenLabel').textContent = mode==='L' ? '軌跡の長さ' : '行動範囲';
+  $('mExtra').textContent = mode==='R' ? `（マップ約${(len/L).toFixed(1)}枚分）` : '';
   $('mLen').textContent=fmt(len);
   $('mPct').textContent=pct;
   $('mBestPct').textContent=bestPct;
@@ -859,7 +888,16 @@ function advance(){
   if(run && !run.finished){
     run.cursorF=Math.min(run.n, run.cursorF + dtr*120*speed);
     const cur=Math.floor(run.cursorF);
-    if(cur>run.drawnIdx){ drawTrailRange(run.drawnIdx,cur); run.drawnIdx=cur; }
+    if(cur>run.drawnIdx){
+      drawTrailRange(run.drawnIdx,cur);
+      const p=run.pb, uxs=run.uxs, uys=run.uys;
+      for(let k=run.drawnIdx+1;k<=cur;k++){
+        const a=uxs[k], b=uys[k];
+        if(a<p.mnx)p.mnx=a; else if(a>p.mxx)p.mxx=a;
+        if(b<p.mny)p.mny=b; else if(b>p.mxy)p.mxy=b;
+      }
+      run.drawnIdx=cur;
+    }
     $('hudNow').textContent=fmt(run.cum[cur]) + (theo?` (${roundPct(run.cum[cur]/theo.len*100)}%)`:'');
     if(cur>=run.n){ run.finished=true; onRunFinished(); }
   }
@@ -917,7 +955,7 @@ $('btnReset').addEventListener('click',()=>{
     setTimeout(()=>{ resetArmed=false; $('btnReset').textContent='進捗をリセット'; }, 3000);
     return;
   }
-  save={mode, modes:{L:emptyProg(), D:emptyProg()}};
+  save={mode, modes:{L:emptyProg(), R:emptyProg()}};
   persist();
   renderSelect();
   resetArmed=false;
@@ -928,14 +966,14 @@ $('btnReset').addEventListener('click',()=>{
 function setMode(m){
   mode=m; save.mode=m; persist();
   $('modeL').classList.toggle('on', m==='L');
-  $('modeD').classList.toggle('on', m==='D');
+  $('modeD').classList.toggle('on', m==='R');
   $('modeDesc').textContent = m==='L'
     ? '転がった道のりの合計の長さで競います。'
-    : 'スタート地点からの直線距離（最遠到達点・ループ跨ぎ積算）で競います。';
+    : '軌跡全体が収まる長方形の対角線の長さ＝動きの大きさで競います。遠くへ行けばスタートに戻ってもOK。';
   renderSelect();
 }
 $('modeL').addEventListener('click',()=>setMode('L'));
-$('modeD').addEventListener('click',()=>setMode('D'));
+$('modeD').addEventListener('click',()=>setMode('R'));
 
 // ---------- 初期化 ----------
 setMode(mode);
