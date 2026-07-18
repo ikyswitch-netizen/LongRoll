@@ -145,13 +145,15 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
   <h1>ステージ選択</h1>
   <p class="tagline">地形のどこかに玉を置いて、玉の転がりを最大化しよう。</p>
   <div class="modebar">
-    <button id="modeL" class="btn">🧵 軌跡モード</button>
-    <button id="modeD" class="btn">🚀 行動範囲モード</button>
-    <button id="modeC" class="btn">🏁 ストライドモード</button>
+    <button id="modeL" class="btn">🧵 軌跡</button>
+    <button id="modeD" class="btn">🚀 行動範囲</button>
+    <button id="modeC" class="btn">🏁 ストライド</button>
+    <button id="modeG" class="btn">🌀 慣性半径</button>
+    <button id="modeA" class="btn">🪂 空気抵抗</button>
     <span id="modeDesc" class="modedesc"></span>
   </div>
   <div class="rulebox">
-    <div class="rule-line">🎮 <span class="em">モード</span>：<b>軌跡</b>＝道のりの合計 ／ <b>行動範囲</b>＝軌跡を囲う矩形の対角線長（スタートへ戻ってもOK） ／ <b>ストライド</b>＝10以上の大きな移動だけを積算（細かい往復は無効）。進捗と理論値はモード別に記録されます。</div>
+    <div class="rule-line">🎮 <span class="em">モード</span>：<b>軌跡</b>＝道のりの合計 ／ <b>行動範囲</b>＝軌跡を囲う矩形の対角線長 ／ <b>ストライド</b>＝10以上の大きな移動だけを積算 ／ <b>慣性半径</b>＝重心からの広がり Rg ／ <b>空気抵抗</b>＝低摩擦の滑走物理で道のりを競う。進捗と理論値はモード別に記録されます。</div>
     <div class="rule-line">🔓 <span class="em">アンロック仕様</span>：ステージ n をクリア（達成率 <b>70%</b> 以上 ＝ ★1）すると、ステージ <b>n+1</b> と <b>n+2</b> の <b>2つ</b>がアンロックされます。</div>
     <div class="rule-line">⭐ 評価：理論値の <b>70%</b> で ★☆☆ ／ <b>90%</b> で ★★☆ ／ <b>95%</b> で ★★★</div>
     <div class="rule-line">🔁 マップは上下左右がループ（トーラス構造）。玉は摩擦により必ず停止します。</div>
@@ -164,6 +166,8 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
       <li><b>軌跡モード</b>：停止するまでの<b>道のりの長さ</b>がスコア。</li>
       <li><b>行動範囲モード</b>：軌跡全体がちょうど収まる長方形の<b>対角線の長さ</b>がスコア。スタート地点付近へ戻っても遠出した分はそのまま残ります（ループ跨ぎ積算・破線の枠で表示）。</li>
       <li><b>ストライドモード</b>：直近のチェックポイントから<b>10以上離れるたび</b>にその直線距離を加算し、そこが次のチェックポイントになります。円の中での細かい往復・うず巻きはノーカウント（破線の円とチェックポイント⚪で表示）。</li>
+      <li><b>慣性半径モード</b>：軌跡の<b>重心からの広がり（慣性半径 Rg・道のり加重）</b>がスコア。しきい値パラメータのない純幾何評価で、一箇所に留まる動きは重心が寄って伸びません（重心とRg円を破線で表示）。</li>
+      <li><b>空気抵抗モード</b>：転がり摩擦がほぼなく<b>空気抵抗（速度依存）</b>で減速する滑走物理。スコアは道のりの長さで、玉は通常より遥かに長く走ります。</li>
       <li>何度でも置き直せます（モードごとにベストが記録されます）。</li>
       <li><b>理論値</b>＝そのステージで可能な最長軌跡（ステージ読み込み時に全域探索で自動算出。初回のみ数秒）。</li>
       <li>「カラー」「等高線」ボタンで高さの表示方法を切り替えられます。明るい色ほど高い場所です。</li>
@@ -269,13 +273,17 @@ const DT        = 1/120;    // 固定タイムステップ
 const MAX_STEPS = 24000;    // 安全上限（200秒相当）: プレイヤーも探索も同一
 const STOP_V    = 0.06;     // 停止判定の速度しきい値
 const STOP_FRAMES = 30;     // 連続静止ステップ数
-const SLOPE_STOP  = MU*1.02;
 const SLOPE_TARGET= 0.6;    // 地形正規化: 最大勾配
 const STAGES    = 30;
 const CANVAS_SIZE = 660;
 const SCALE     = CANVAS_SIZE / L;
 const STAR_TH   = [70, 90, 95];
 const STRIDE    = 10;   // ストライドモード: この距離以上の移動だけをカウント
+// 空気抵抗モードの物理: 転がり摩擦を最小化（停止保証のため僅かに残す）し、
+// 線形+速度2乗の空気抵抗を主体にした滑走物理
+const MU_AIR    = 0.003;
+const DRAG_AIR  = 0.015;
+const QDRAG_AIR = 0.003;
 
 // ---------- 乱数 ----------
 function mulberry32(a){
@@ -304,20 +312,27 @@ function loadSave(){
       // 旧・飛距離モード(D)は評価指標変更のため行動範囲モード(R)を新規に用意
       if(!s.modes.R) s.modes.R = emptyProg();
       if(!s.modes.C) s.modes.C = emptyProg();
+      if(!s.modes.G) s.modes.G = emptyProg();
+      if(!s.modes.A) s.modes.A = emptyProg();
       if(s.mode==='D') s.mode='R';
       return s;
     }
     // 旧形式（モードなし）→ 軌跡モードの進捗として引き継ぐ
-    if(s && s.unlocked) return { mode:'L', modes:{ L:s, R:emptyProg(), C:emptyProg() } };
+    if(s && s.unlocked) return { mode:'L', modes:{ L:s, R:emptyProg(), C:emptyProg(), G:emptyProg(), A:emptyProg() } };
   }catch(e){}
-  return { mode:'L', modes:{ L:emptyProg(), R:emptyProg(), C:emptyProg() } };
+  return { mode:'L', modes:{ L:emptyProg(), R:emptyProg(), C:emptyProg(), G:emptyProg(), A:emptyProg() } };
 }
 function persist(){ lsSet(SAVE_KEY, JSON.stringify(save)); }
 // mode: 'L'=軌跡（道のり合計） / 'R'=行動範囲（バウンディングボックス対角線長）
 //       'C'=ストライド（STRIDE 以上の大きな移動だけを積算）
-let mode = (save.mode==='R'||save.mode==='C') ? save.mode : 'L';
+//       'G'=慣性半径（軌跡の重心まわりの広がり Rg・道のり加重）
+//       'A'=空気抵抗（低摩擦・空気抵抗の滑走物理で道のりを競う）
+let mode = ['L','R','C','G','A'].includes(save.mode) ? save.mode : 'L';
 function prog(){ return save.modes[mode]; }
-const metric = r => mode==='L' ? r.len : mode==='R' ? r.range : r.stride;
+const metric = r =>
+  (mode==='L'||mode==='A') ? r.len :
+  mode==='R' ? r.range :
+  mode==='C' ? r.stride : r.rg;
 const MODE_INFO={
   L:{ name:'🧵 軌跡モード', now:'今回の軌跡長', score:'軌跡の長さ',
       desc:'転がった道のりの合計の長さで競います。',
@@ -328,6 +343,12 @@ const MODE_INFO={
   C:{ name:'🏁 ストライドモード', now:'今回のストライド距離', score:'ストライド距離',
       desc:`直近のチェックポイントから ${STRIDE} 以上離れるたびに、その直線距離を加算。細かい往復やうず巻きはカウントされません。`,
       hint:`💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>破線の円（半径${STRIDE}）の外へ出るたびにチェックポイント⚪が置かれ、そこまでの直線距離が加算されます。円の中でいくら動いてもノーカウント。大きな移動をつなげよう。` },
+  G:{ name:'🌀 慣性半径モード', now:'今回の慣性半径', score:'慣性半径 Rg',
+      desc:'軌跡の重心からの広がり（慣性半径 Rg・道のり加重）で競います。しきい値パラメータのない純幾何評価。',
+      hint:'💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>破線の円＝軌跡の重心と慣性半径 Rg。重心から離れた場所を長く走るほど円が広がります。一箇所に長く留まると重心がそこへ寄って伸びません。' },
+  A:{ name:'🪂 空気抵抗モード', now:'今回の軌跡長', score:'軌跡の長さ',
+      desc:'転がり摩擦がほぼなく、空気抵抗（速度依存）で減速する滑走物理。スコアは道のりの長さ。',
+      hint:'💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>摩擦が小さいので玉は非常に長く走ります。速いほど空気抵抗が強く効くため、勢い任せの急降下より、長く滑走が続くルートが有利です。' },
 };
 const theoKey = n => `longroll_${VERSION}_theo_${mode}_${n}`;
 function loadTheoRaw(n){
@@ -499,7 +520,8 @@ function simulate(t, sx, sy, record){
   let ux=sx, uy=sy;                    // 非ラップ座標（ループ跨ぎを積算）
   let mnx=sx, mxx=sx, mny=sy, mxy=sy;  // 軌跡のバウンディングボックス（行動範囲モード用）
   let acx=sx, acy=sy, stride=0;        // ストライドモード: 直近チェックポイント（非ラップ）と粗視化距離
-  let xs=null, ys=null, uxs=null, uys=null, cumL=null, cumR=null, cumC=null;
+  let mW=0, mSx=0, mSy=0, mSq=0;       // 慣性半径モード: 道のり加重の1次・2次モーメント
+  let xs=null, ys=null, uxs=null, uys=null, cumL=null, cumR=null, cumC=null, cumG=null, cgx=null, cgy=null;
   let cpStep=null, cpX=null, cpY=null; // チェックポイント（ステップ番号とラップ座標）
   if(record){
     xs=new Float32Array(MAX_STEPS+1);
@@ -509,10 +531,20 @@ function simulate(t, sx, sy, record){
     cumL=new Float32Array(MAX_STEPS+1);
     cumR=new Float32Array(MAX_STEPS+1);
     cumC=new Float32Array(MAX_STEPS+1);
+    cumG=new Float32Array(MAX_STEPS+1);
+    cgx=new Float32Array(MAX_STEPS+1);
+    cgy=new Float32Array(MAX_STEPS+1);
     cpStep=[]; cpX=[]; cpY=[];
-    xs[0]=x; ys[0]=y; uxs[0]=ux; uys[0]=uy; cumL[0]=0; cumR[0]=0; cumC[0]=0;
+    xs[0]=x; ys[0]=y; uxs[0]=ux; uys[0]=uy;
+    cumL[0]=0; cumR[0]=0; cumC[0]=0; cumG[0]=0; cgx[0]=sx; cgy[0]=sy;
   }
-  const dec=MU*G*DT;
+  // モード別物理: 空気抵抗モードのみ低摩擦・空気抵抗（線形+速度2乗）主体
+  const air = mode==='A';
+  const muC = air ? MU_AIR   : MU;
+  const drg = air ? DRAG_AIR : DRAG;
+  const qd  = air ? QDRAG_AIR : 0;
+  const dec = muC*G*DT;
+  const slopeStop = muC*1.02;
   while(steps<MAX_STEPS){
     // 勾配（双一次補間・ラップ）
     const u=x*inv, v=y*inv;
@@ -524,9 +556,10 @@ function simulate(t, sx, sy, record){
     const w00=(1-fu)*(1-fv), w01=fu*(1-fv), w10=(1-fu)*fv, w11=fu*fv;
     const gx=gxA[r0+i0]*w00+gxA[r0+i1]*w01+gxA[r1+i0]*w10+gxA[r1+i1]*w11;
     const gy=gyA[r0+i0]*w00+gyA[r0+i1]*w01+gyA[r1+i0]*w10+gyA[r1+i1]*w11;
-    // 重力 + 粘性抵抗
-    vx+=(-G*gx-DRAG*vx)*DT;
-    vy+=(-G*gy-DRAG*vy)*DT;
+    // 重力 + 空気抵抗（線形、空気抵抗モードでは速度2乗項も）
+    const sp0=Math.sqrt(vx*vx+vy*vy);
+    vx+=(-G*gx-(drg+qd*sp0)*vx)*DT;
+    vy+=(-G*gy-(drg+qd*sp0)*vy)*DT;
     // クーロン転がり摩擦（速度を反転させない）
     let sp=Math.sqrt(vx*vx+vy*vy);
     if(sp<=dec){ vx=0; vy=0; sp=0; }
@@ -535,9 +568,11 @@ function simulate(t, sx, sy, record){
     ux+=vx*DT; uy+=vy*DT;
     if(x<0)x+=L; else if(x>=L)x-=L;
     if(y<0)y+=L; else if(y>=L)y-=L;
-    len+=sp*DT;
+    const ds=sp*DT;
+    len+=ds;
     if(ux<mnx)mnx=ux; else if(ux>mxx)mxx=ux;
     if(uy<mny)mny=uy; else if(uy>mxy)mxy=uy;
+    mW+=ds; mSx+=ds*ux; mSy+=ds*uy; mSq+=ds*(ux*ux+uy*uy);
     steps++;
     const adx=ux-acx, ady=uy-acy, ad2=adx*adx+ady*ady;
     if(ad2>=STRIDE*STRIDE){
@@ -550,17 +585,29 @@ function simulate(t, sx, sy, record){
       const rw=mxx-mnx, rh=mxy-mny;
       cumR[steps]=Math.sqrt(rw*rw+rh*rh);
       cumC[steps]=stride;
+      if(mW>0){
+        const gx0=mSx/mW, gy0=mSy/mW;
+        cgx[steps]=gx0; cgy[steps]=gy0;
+        const v2=mSq/mW - gx0*gx0 - gy0*gy0;
+        cumG[steps]=v2>0?Math.sqrt(v2):0;
+      }else{ cgx[steps]=ux; cgy[steps]=uy; cumG[steps]=0; }
     }
     // 停止判定: 低速 かつ 摩擦で静止可能な緩勾配
-    if(sp<STOP_V && Math.sqrt(gx*gx+gy*gy)<=SLOPE_STOP){
+    if(sp<STOP_V && Math.sqrt(gx*gx+gy*gy)<=slopeStop){
       if(++stop>=STOP_FRAMES) break;
     } else stop=0;
   }
   const rw=mxx-mnx, rh=mxy-mny;
   const range=Math.sqrt(rw*rw+rh*rh);
+  let rg=0;
+  if(mW>0){
+    const gx0=mSx/mW, gy0=mSy/mW;
+    const v2=mSq/mW - gx0*gx0 - gy0*gy0;
+    rg=v2>0?Math.sqrt(v2):0;
+  }
   return record
-    ? {len,range,stride,n:steps,xs,ys,uxs,uys,cumL,cumR,cumC,cpStep,cpX,cpY}
-    : {len,range,stride,n:steps};
+    ? {len,range,stride,rg,n:steps,xs,ys,uxs,uys,cumL,cumR,cumC,cumG,cgx,cgy,cpStep,cpX,cpY}
+    : {len,range,stride,rg,n:steps};
 }
 
 // ---------- 理論値探索（グリッド全域 → 上位付近を段階的に絞り込み） ----------
@@ -785,6 +832,29 @@ function render(){
     }
     mctx.restore();
   }
+  if(run && mode==='G'){
+    // 慣性半径サークル（中心＝軌跡の重心、半径＝Rg）
+    const ci=Math.min(run.n, Math.floor(run.cursorF));
+    const rr=run.cumG[ci]*SCALE;
+    if(rr>2){
+      const gx0=((run.cgx[ci]%L)+L)%L, gy0=((run.cgy[ci]%L)+L)%L;
+      mctx.save();
+      mctx.setLineDash([6,5]);
+      for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){
+        const cx=(gx0+ox*L)*SCALE, cy=(gy0+oy*L)*SCALE;
+        if(cx+rr<0||cy+rr<0||cx-rr>CANVAS_SIZE||cy-rr>CANVAS_SIZE) continue;
+        mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
+        mctx.lineWidth=3; mctx.strokeStyle='rgba(18,16,22,.4)'; mctx.stroke();
+        mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
+        mctx.lineWidth=1.3; mctx.strokeStyle='rgba(255,255,255,.9)'; mctx.stroke();
+        mctx.setLineDash([]);
+        mctx.beginPath(); mctx.arc(cx,cy,2.2,0,Math.PI*2);
+        mctx.fillStyle='rgba(255,255,255,.9)'; mctx.fill();
+        mctx.setLineDash([6,5]);
+      }
+      mctx.restore();
+    }
+  }
   if(run){
     // スタート地点
     const sx=run.xs[0]*SCALE, sy=run.ys[0]*SCALE;
@@ -877,7 +947,9 @@ function startRun(wx,wy){
   clearTrail();
   const r=simulate(terrain,wx,wy,true);
   run=r;
-  run.cum = mode==='L' ? r.cumL : mode==='R' ? r.cumR : r.cumC; // 再生HUD・スコアはモードの指標を使う
+  run.cum = (mode==='L'||mode==='A') ? r.cumL :
+            mode==='R' ? r.cumR :
+            mode==='C' ? r.cumC : r.cumG; // 再生HUD・スコアはモードの指標を使う
   // 再生中の行動範囲ボックス（カーソル位置までの範囲を保持）
   run.pb={mnx:r.uxs[0], mxx:r.uxs[0], mny:r.uys[0], mxy:r.uys[0]};
   // ストライドモード: 通過済みチェックポイントの追跡
@@ -1013,7 +1085,7 @@ $('btnReset').addEventListener('click',()=>{
     setTimeout(()=>{ resetArmed=false; $('btnReset').textContent='進捗をリセット'; }, 3000);
     return;
   }
-  save={mode, modes:{L:emptyProg(), R:emptyProg(), C:emptyProg()}};
+  save={mode, modes:{L:emptyProg(), R:emptyProg(), C:emptyProg(), G:emptyProg(), A:emptyProg()}};
   persist();
   renderSelect();
   resetArmed=false;
@@ -1026,12 +1098,16 @@ function setMode(m){
   $('modeL').classList.toggle('on', m==='L');
   $('modeD').classList.toggle('on', m==='R');
   $('modeC').classList.toggle('on', m==='C');
+  $('modeG').classList.toggle('on', m==='G');
+  $('modeA').classList.toggle('on', m==='A');
   $('modeDesc').textContent = MODE_INFO[m].desc;
   renderSelect();
 }
 $('modeL').addEventListener('click',()=>setMode('L'));
 $('modeD').addEventListener('click',()=>setMode('R'));
 $('modeC').addEventListener('click',()=>setMode('C'));
+$('modeG').addEventListener('click',()=>setMode('G'));
+$('modeA').addEventListener('click',()=>setMode('A'));
 
 // ---------- 初期化 ----------
 setMode(mode);
