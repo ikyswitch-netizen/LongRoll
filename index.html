@@ -147,10 +147,11 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
   <div class="modebar">
     <button id="modeL" class="btn">🧵 軌跡モード</button>
     <button id="modeD" class="btn">🚀 行動範囲モード</button>
+    <button id="modeC" class="btn">🏁 ストライドモード</button>
     <span id="modeDesc" class="modedesc"></span>
   </div>
   <div class="rulebox">
-    <div class="rule-line">🎮 <span class="em">モード</span>：<b>軌跡</b>＝転がった道のりの合計 ／ <b>行動範囲</b>＝軌跡全体がちょうど収まる長方形の対角線の長さ。大きく動けばスタート地点に戻ってもOK（ループ跨ぎは積算）。進捗と理論値はモード別に記録されます。</div>
+    <div class="rule-line">🎮 <span class="em">モード</span>：<b>軌跡</b>＝道のりの合計 ／ <b>行動範囲</b>＝軌跡を囲う矩形の対角線長（スタートへ戻ってもOK） ／ <b>ストライド</b>＝10以上の大きな移動だけを積算（細かい往復は無効）。進捗と理論値はモード別に記録されます。</div>
     <div class="rule-line">🔓 <span class="em">アンロック仕様</span>：ステージ n をクリア（達成率 <b>70%</b> 以上 ＝ ★1）すると、ステージ <b>n+1</b> と <b>n+2</b> の <b>2つ</b>がアンロックされます。</div>
     <div class="rule-line">⭐ 評価：理論値の <b>70%</b> で ★☆☆ ／ <b>90%</b> で ★★☆ ／ <b>95%</b> で ★★★</div>
     <div class="rule-line">🔁 マップは上下左右がループ（トーラス構造）。玉は摩擦により必ず停止します。</div>
@@ -160,7 +161,9 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
     <summary>遊び方</summary>
     <ul>
       <li>マップをクリックすると、その位置に玉が置かれ、重力で低い方へ転がり始めます。</li>
-      <li><b>軌跡モード</b>：停止するまでの<b>道のりの長さ</b>がスコア。<b>行動範囲モード</b>：軌跡全体がちょうど収まる長方形の<b>対角線の長さ</b>がスコア。大きな動きが評価され、スタート地点付近へ戻っても遠出した分はそのまま残ります（マップを何周しても積算）。プレイ中は範囲が破線の枠で表示されます。</li>
+      <li><b>軌跡モード</b>：停止するまでの<b>道のりの長さ</b>がスコア。</li>
+      <li><b>行動範囲モード</b>：軌跡全体がちょうど収まる長方形の<b>対角線の長さ</b>がスコア。スタート地点付近へ戻っても遠出した分はそのまま残ります（ループ跨ぎ積算・破線の枠で表示）。</li>
+      <li><b>ストライドモード</b>：直近のチェックポイントから<b>10以上離れるたび</b>にその直線距離を加算し、そこが次のチェックポイントになります。円の中での細かい往復・うず巻きはノーカウント（破線の円とチェックポイント⚪で表示）。</li>
       <li>何度でも置き直せます（モードごとにベストが記録されます）。</li>
       <li><b>理論値</b>＝そのステージで可能な最長軌跡（ステージ読み込み時に全域探索で自動算出。初回のみ数秒）。</li>
       <li>「カラー」「等高線」ボタンで高さの表示方法を切り替えられます。明るい色ほど高い場所です。</li>
@@ -272,6 +275,7 @@ const STAGES    = 30;
 const CANVAS_SIZE = 660;
 const SCALE     = CANVAS_SIZE / L;
 const STAR_TH   = [70, 90, 95];
+const STRIDE    = 10;   // ストライドモード: この距離以上の移動だけをカウント
 
 // ---------- 乱数 ----------
 function mulberry32(a){
@@ -299,19 +303,32 @@ function loadSave(){
     if(s && s.modes){
       // 旧・飛距離モード(D)は評価指標変更のため行動範囲モード(R)を新規に用意
       if(!s.modes.R) s.modes.R = emptyProg();
+      if(!s.modes.C) s.modes.C = emptyProg();
       if(s.mode==='D') s.mode='R';
       return s;
     }
     // 旧形式（モードなし）→ 軌跡モードの進捗として引き継ぐ
-    if(s && s.unlocked) return { mode:'L', modes:{ L:s, R:emptyProg() } };
+    if(s && s.unlocked) return { mode:'L', modes:{ L:s, R:emptyProg(), C:emptyProg() } };
   }catch(e){}
-  return { mode:'L', modes:{ L:emptyProg(), R:emptyProg() } };
+  return { mode:'L', modes:{ L:emptyProg(), R:emptyProg(), C:emptyProg() } };
 }
 function persist(){ lsSet(SAVE_KEY, JSON.stringify(save)); }
-// mode: 'L'=軌跡（道のり合計） / 'R'=行動範囲（軌跡のバウンディングボックス対角線長）
-let mode = save.mode==='R' ? 'R' : 'L';
+// mode: 'L'=軌跡（道のり合計） / 'R'=行動範囲（バウンディングボックス対角線長）
+//       'C'=ストライド（STRIDE 以上の大きな移動だけを積算）
+let mode = (save.mode==='R'||save.mode==='C') ? save.mode : 'L';
 function prog(){ return save.modes[mode]; }
-const metric = r => mode==='L' ? r.len : r.range;
+const metric = r => mode==='L' ? r.len : mode==='R' ? r.range : r.stride;
+const MODE_INFO={
+  L:{ name:'🧵 軌跡モード', now:'今回の軌跡長', score:'軌跡の長さ',
+      desc:'転がった道のりの合計の長さで競います。',
+      hint:'💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>高い所から谷を伝って長く走るルートを探そう。勢い余って峠を越えると大きく距離を稼げます。' },
+  R:{ name:'🚀 行動範囲モード', now:'今回の行動範囲', score:'行動範囲',
+      desc:'軌跡全体が収まる長方形の対角線の長さ＝動きの大きさで競います。遠くへ行けばスタートに戻ってもOK。',
+      hint:'💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>破線の枠＝これまでの行動範囲。枠の対角線が伸びる（＝新しい方向へ大きく動く）ほど高評価。遠くへ行って戻ってきても遠出した分は残ります。' },
+  C:{ name:'🏁 ストライドモード', now:'今回のストライド距離', score:'ストライド距離',
+      desc:`直近のチェックポイントから ${STRIDE} 以上離れるたびに、その直線距離を加算。細かい往復やうず巻きはカウントされません。`,
+      hint:`💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>破線の円（半径${STRIDE}）の外へ出るたびにチェックポイント⚪が置かれ、そこまでの直線距離が加算されます。円の中でいくら動いてもノーカウント。大きな移動をつなげよう。` },
+};
 const theoKey = n => `longroll_${VERSION}_theo_${mode}_${n}`;
 function loadTheoRaw(n){
   let v = lsGet(theoKey(n));
@@ -481,7 +498,9 @@ function simulate(t, sx, sy, record){
   let x=sx, y=sy, vx=0, vy=0, len=0, stop=0, steps=0;
   let ux=sx, uy=sy;                    // 非ラップ座標（ループ跨ぎを積算）
   let mnx=sx, mxx=sx, mny=sy, mxy=sy;  // 軌跡のバウンディングボックス（行動範囲モード用）
-  let xs=null, ys=null, uxs=null, uys=null, cumL=null, cumR=null;
+  let acx=sx, acy=sy, stride=0;        // ストライドモード: 直近チェックポイント（非ラップ）と粗視化距離
+  let xs=null, ys=null, uxs=null, uys=null, cumL=null, cumR=null, cumC=null;
+  let cpStep=null, cpX=null, cpY=null; // チェックポイント（ステップ番号とラップ座標）
   if(record){
     xs=new Float32Array(MAX_STEPS+1);
     ys=new Float32Array(MAX_STEPS+1);
@@ -489,7 +508,9 @@ function simulate(t, sx, sy, record){
     uys=new Float32Array(MAX_STEPS+1);
     cumL=new Float32Array(MAX_STEPS+1);
     cumR=new Float32Array(MAX_STEPS+1);
-    xs[0]=x; ys[0]=y; uxs[0]=ux; uys[0]=uy; cumL[0]=0; cumR[0]=0;
+    cumC=new Float32Array(MAX_STEPS+1);
+    cpStep=[]; cpX=[]; cpY=[];
+    xs[0]=x; ys[0]=y; uxs[0]=ux; uys[0]=uy; cumL[0]=0; cumR[0]=0; cumC[0]=0;
   }
   const dec=MU*G*DT;
   while(steps<MAX_STEPS){
@@ -518,11 +539,17 @@ function simulate(t, sx, sy, record){
     if(ux<mnx)mnx=ux; else if(ux>mxx)mxx=ux;
     if(uy<mny)mny=uy; else if(uy>mxy)mxy=uy;
     steps++;
+    const adx=ux-acx, ady=uy-acy, ad2=adx*adx+ady*ady;
+    if(ad2>=STRIDE*STRIDE){
+      stride+=Math.sqrt(ad2); acx=ux; acy=uy;
+      if(record){ cpStep.push(steps); cpX.push(x); cpY.push(y); }
+    }
     if(record){
       xs[steps]=x; ys[steps]=y; uxs[steps]=ux; uys[steps]=uy;
       cumL[steps]=len;
       const rw=mxx-mnx, rh=mxy-mny;
       cumR[steps]=Math.sqrt(rw*rw+rh*rh);
+      cumC[steps]=stride;
     }
     // 停止判定: 低速 かつ 摩擦で静止可能な緩勾配
     if(sp<STOP_V && Math.sqrt(gx*gx+gy*gy)<=SLOPE_STOP){
@@ -531,7 +558,9 @@ function simulate(t, sx, sy, record){
   }
   const rw=mxx-mnx, rh=mxy-mny;
   const range=Math.sqrt(rw*rw+rh*rh);
-  return record ? {len,range,n:steps,xs,ys,uxs,uys,cumL,cumR} : {len,range,n:steps};
+  return record
+    ? {len,range,stride,n:steps,xs,ys,uxs,uys,cumL,cumR,cumC,cpStep,cpX,cpY}
+    : {len,range,stride,n:steps};
 }
 
 // ---------- 理論値探索（グリッド全域 → 上位付近を段階的に絞り込み） ----------
@@ -717,6 +746,11 @@ function drawTrailRange(from,to){
   tctx.strokeStyle='rgba(255,255,255,.85)'; tctx.lineWidth=3.6; tctx.stroke(path);
   tctx.strokeStyle='#e5322d'; tctx.lineWidth=1.8; tctx.stroke(path);
 }
+function drawCheckpoint(x,y){
+  tctx.beginPath(); tctx.arc(x*SCALE,y*SCALE,3.2,0,Math.PI*2);
+  tctx.fillStyle='#fff'; tctx.fill();
+  tctx.lineWidth=1.4; tctx.strokeStyle='#1c212b'; tctx.stroke();
+}
 
 // ---------- 毎フレーム合成 ----------
 function render(){
@@ -733,6 +767,21 @@ function render(){
       if(rx>CANVAS_SIZE||ry>CANVAS_SIZE||rx+rw<0||ry+rh<0) continue;
       mctx.lineWidth=3;   mctx.strokeStyle='rgba(18,16,22,.45)'; mctx.strokeRect(rx,ry,rw,rh);
       mctx.lineWidth=1.4; mctx.strokeStyle='rgba(255,255,255,.95)'; mctx.strokeRect(rx,ry,rw,rh);
+    }
+    mctx.restore();
+  }
+  if(run && mode==='C'){
+    // ストライド判定円（この円を出ると次のチェックポイントが刻まれる）
+    const rr=STRIDE*SCALE;
+    mctx.save();
+    mctx.setLineDash([6,5]);
+    for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){
+      const cx=(run.anchorX+ox*L)*SCALE, cy=(run.anchorY+oy*L)*SCALE;
+      if(cx+rr<0||cy+rr<0||cx-rr>CANVAS_SIZE||cy-rr>CANVAS_SIZE) continue;
+      mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
+      mctx.lineWidth=3; mctx.strokeStyle='rgba(18,16,22,.4)'; mctx.stroke();
+      mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
+      mctx.lineWidth=1.3; mctx.strokeStyle='rgba(255,255,255,.9)'; mctx.stroke();
     }
     mctx.restore();
   }
@@ -784,11 +833,10 @@ async function enterStage(n){
   showScreen('game');
   $('stageNum').textContent=n;
   $('seedInfo').textContent='SEED '+stageSeed(n).toString(16).toUpperCase();
-  $('modeInfo').textContent = mode==='L' ? '🧵 軌跡モード' : '🚀 行動範囲モード';
-  $('hudNowLabel').textContent = mode==='L' ? '今回の軌跡長' : '今回の行動範囲';
-  $('hintBox').innerHTML = mode==='L'
-    ? '💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>高い所から谷を伝って長く走るルートを探そう。勢い余って峠を越えると大きく距離を稼げます。'
-    : '💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>破線の枠＝これまでの行動範囲。枠の対角線が伸びる（＝新しい方向へ大きく動く）ほど高評価。遠くへ行って戻ってきても遠出した分は残ります。';
+  const mi=MODE_INFO[mode];
+  $('modeInfo').textContent = mi.name;
+  $('hudNowLabel').textContent = mi.now;
+  $('hintBox').innerHTML = mi.hint;
   terrain=new Terrain(n);
   theo=null; run=null;
   clearTrail();
@@ -829,9 +877,11 @@ function startRun(wx,wy){
   clearTrail();
   const r=simulate(terrain,wx,wy,true);
   run=r;
-  run.cum = mode==='L' ? r.cumL : r.cumR; // 再生HUD・スコアはモードの指標を使う
+  run.cum = mode==='L' ? r.cumL : mode==='R' ? r.cumR : r.cumC; // 再生HUD・スコアはモードの指標を使う
   // 再生中の行動範囲ボックス（カーソル位置までの範囲を保持）
   run.pb={mnx:r.uxs[0], mxx:r.uxs[0], mny:r.uys[0], mxy:r.uys[0]};
+  // ストライドモード: 通過済みチェックポイントの追跡
+  run.cpPtr=0; run.anchorX=r.xs[0]; run.anchorY=r.ys[0];
   run.cursorF=0; run.drawnIdx=0; run.finished=false;
 }
 
@@ -857,8 +907,10 @@ function onRunFinished(){
   }
   persist();
   // モーダル表示
-  $('mLenLabel').textContent = mode==='L' ? '軌跡の長さ' : '行動範囲';
-  $('mExtra').textContent = mode==='R' ? `（マップ約${(len/L).toFixed(1)}枚分）` : '';
+  $('mLenLabel').textContent = MODE_INFO[mode].score;
+  $('mExtra').textContent =
+    mode==='R' ? `（マップ約${(len/L).toFixed(1)}枚分）` :
+    mode==='C' ? `（大移動 ${run.cpStep.length} 回）` : '';
   $('mLen').textContent=fmt(len);
   $('mPct').textContent=pct;
   $('mBestPct').textContent=bestPct;
@@ -895,6 +947,12 @@ function advance(){
         const a=uxs[k], b=uys[k];
         if(a<p.mnx)p.mnx=a; else if(a>p.mxx)p.mxx=a;
         if(b<p.mny)p.mny=b; else if(b>p.mxy)p.mxy=b;
+      }
+      // 通過したチェックポイントを反映（ストライドモードでは軌跡上に⚪を刻む）
+      while(run.cpPtr<run.cpStep.length && run.cpStep[run.cpPtr]<=cur){
+        const i=run.cpPtr++;
+        run.anchorX=run.cpX[i]; run.anchorY=run.cpY[i];
+        if(mode==='C') drawCheckpoint(run.cpX[i], run.cpY[i]);
       }
       run.drawnIdx=cur;
     }
@@ -955,7 +1013,7 @@ $('btnReset').addEventListener('click',()=>{
     setTimeout(()=>{ resetArmed=false; $('btnReset').textContent='進捗をリセット'; }, 3000);
     return;
   }
-  save={mode, modes:{L:emptyProg(), R:emptyProg()}};
+  save={mode, modes:{L:emptyProg(), R:emptyProg(), C:emptyProg()}};
   persist();
   renderSelect();
   resetArmed=false;
@@ -967,13 +1025,13 @@ function setMode(m){
   mode=m; save.mode=m; persist();
   $('modeL').classList.toggle('on', m==='L');
   $('modeD').classList.toggle('on', m==='R');
-  $('modeDesc').textContent = m==='L'
-    ? '転がった道のりの合計の長さで競います。'
-    : '軌跡全体が収まる長方形の対角線の長さ＝動きの大きさで競います。遠くへ行けばスタートに戻ってもOK。';
+  $('modeC').classList.toggle('on', m==='C');
+  $('modeDesc').textContent = MODE_INFO[m].desc;
   renderSelect();
 }
 $('modeL').addEventListener('click',()=>setMode('L'));
 $('modeD').addEventListener('click',()=>setMode('R'));
+$('modeC').addEventListener('click',()=>setMode('C'));
 
 // ---------- 初期化 ----------
 setMode(mode);
