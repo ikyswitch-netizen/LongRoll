@@ -92,6 +92,12 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
 #calcOverlay .msg{font-size:15px}
 #calcBarWrap{width:60%; height:10px; background:#2a3140; border-radius:5px; overflow:hidden}
 #calcBar{height:100%; width:0%; background:linear-gradient(90deg,var(--accent2),var(--accent)); transition:width .1s}
+#toast{
+  position:absolute; top:14px; left:50%; transform:translateX(-50%);
+  background:rgba(20,14,12,.92); border:1px solid #ff5a4e; color:#ffd9d5;
+  padding:6px 16px; border-radius:999px; font-size:13px; pointer-events:none; z-index:6;
+}
+.card .conds{font-size:12px; min-height:18px}
 #panel{flex:1 1 300px; min-width:280px; display:flex; flex-direction:column; gap:12px}
 .pbox{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 14px}
 .pbox h3{font-size:12px; color:var(--dim); font-weight:700; margin-bottom:6px; letter-spacing:.5px}
@@ -149,18 +155,21 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
   <h1>ステージ選択<span id="starTotal" class="startotal"></span></h1>
   <p class="tagline">地形のどこかに玉を置いて、玉の転がりを最大化しよう。全100ステージ。</p>
   <div class="rulebox">
-    <div class="rule-line">🎮 <span class="em">モード</span>：ステージごとに <b>🪂 空気抵抗</b> → <b>📏 直線距離</b> → <b>🌀 慣性半径</b> の順で割り当てられています（Stage 1=🪂, 2=📏, 3=🌀, 4=🪂, …）。</div>
+    <div class="rule-line">🎮 <span class="em">モード</span>：ステージごとに <b>🪂 空気抵抗</b> → <b>🔷 凸包サイズ</b> → <b>📏 直線距離</b> → <b>🌀 慣性半径</b> の順で割り当てられています（Stage 1=🪂, 2=🔷, 3=📏, 4=🌀, 5=🪂, …）。</div>
     <div class="rule-line">🔓 <span class="em">アンロック仕様</span>：Stage 1〜3 は最初から解放。<b>★の合計が2個増えるごと</b>に次のステージが1つ解放されます（Stage n の解放条件：合計★ <b>2×(n−3)</b> 個）。</div>
     <div class="rule-line">⭐ 評価：理論値の <b>70%</b> で ★☆☆ ／ <b>90%</b> で ★★☆ ／ <b>95%</b> で ★★★</div>
-    <div class="rule-line">🔁 マップは上下左右がループ（トーラス構造）。玉は必ず停止します。🎲 各ステージはシード値から生成され、後半ほど地形が複雑になります。</div>
+    <div class="rule-line">⚠ <span class="em">特殊条件</span>：🐌 <b>抵抗2倍</b>（摩擦・空気抵抗×2） ／ ⛰ <b>入山規制</b>（赤いエリアに設置不可） ／ 🌍 <b>重力2倍</b> — 後半のステージほど出現しやすく、さらに後半は2つ重なることもあります（カードにアイコン表示）。</div>
+    <div class="rule-line">🔁 マップは上下左右がループ（トーラス構造）。玉は必ず停止します。🎲 各ステージはシード値から生成され、後半ほど複雑に。<b>平坦なプラトー</b>も出現します。</div>
   </div>
   <details class="howto">
     <summary>遊び方</summary>
     <ul>
       <li>マップをクリックすると、その位置に玉が置かれ、重力で低い方へ転がり始めます。何度でも置き直せます（ベストが記録されます）。</li>
-      <li><b>🪂 空気抵抗</b>：摩擦がほぼなく、空気抵抗（速度依存）で減速する滑走物理。停止するまでの<b>道のりの長さ</b>がスコア。玉は非常に長く走ります。</li>
+      <li><b>🪂 空気抵抗</b>：転がり摩擦は通常のまま、<b>空気抵抗が非常に強い</b>物理。停止するまでの<b>道のりの長さ</b>がスコア。</li>
+      <li><b>🔷 凸包サイズ</b>：軌跡の<b>凸包（すべての通過点を含む最小の凸多角形）の面積の平方根</b>がスコア。一直線の往復は面積0（破線の多角形で表示）。</li>
       <li><b>📏 直線距離</b>：スタート地点から<b>最も遠くに到達した直線距離</b>がスコア（破線の円で表示。マップを何周しても積算）。</li>
       <li><b>🌀 慣性半径</b>：軌跡の<b>重心からの広がり Rg</b> がスコア（重心とRg円を破線で表示）。細かいジタバタは埋もれ、大きな動きだけが効きます。</li>
+      <li><b>⚠ 特殊条件</b>：ステージによって 🐌抵抗2倍・⛰入山規制（赤いエリアには玉を置けない。転がって侵入するのは自由）・🌍重力2倍 が付きます。入山規制ステージでは理論値の探索も規制エリア外だけを対象にします。</li>
       <li><b>理論値</b>＝そのステージで可能な最大スコア（ステージ読み込み時に全域探索で自動算出。初回のみ数秒）。</li>
       <li>「カラー」「等高線」ボタンで高さの表示方法を切り替えられます。明るい色ほど高い場所です。再生速度は ×1 / ×4 / ×16、「⏩ 結果へ」で即座に結果を見られます。</li>
     </ul>
@@ -172,13 +181,17 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
       <p class="eq">a = −G∇h(p) − (c₁ + c₂|v|)·v − μG·v/|v|</p>
       <p>右辺は順に「重力（斜面の勾配）」「空気抵抗（線形＋速度2乗）」「転がり摩擦」。G=25。定数はモードで異なります：</p>
       <ul>
-        <li>通常物理（📏直線距離・🌀慣性半径）：c₁=0.1, c₂=0, μ=0.05</li>
-        <li>🪂空気抵抗モード：c₁=0.07, c₂=0.015, μ=0.015 …… 速度2乗の空気抵抗が主体で、通常より長く滑走する</li>
+        <li>通常物理（🔷凸包サイズ・📏直線距離・🌀慣性半径）：c₁=0.1, c₂=0, μ=0.05</li>
+        <li>🪂空気抵抗モード：c₁=0.2, c₂=0.05, μ=0.05 …… 摩擦は通常のまま、空気抵抗だけが大幅に強い</li>
+        <li>特殊条件：🐌抵抗2倍で μ, c₁, c₂ がすべて2倍 ／ 🌍重力2倍で G が2倍</li>
       </ul>
       <p>摩擦がある限り運動エネルギーは単調に減少するため、玉は必ず停止します（道のり ≦ 落差/μ が成り立つ）。</p>
       <p><b>🪂 軌跡長（空気抵抗モードのスコア）</b></p>
       <p class="eq">Score = L = ∫ |v| dt</p>
       <p>xy平面上を転がった道のりの合計。高さ方向の移動は含みません。</p>
+      <p><b>🔷 凸包サイズ</b></p>
+      <p class="eq">Score = √A　（A＝軌跡の凸包の面積）</p>
+      <p>軌跡を約1間隔でサンプリングした点集合の凸包（すべての点を含む最小の凸多角形）の面積 A の平方根。√を取ることで、他のモードと同じ「長さ」の次元に揃えています。一直線の動きは面積0になるため、広く回り込む軌跡だけが評価されます。</p>
       <p><b>📏 直線距離</b></p>
       <p class="eq">Score = max<sub>t</sub> |p(t) − p(0)|</p>
       <p>スタートから各時刻の位置までの直線距離の最大値。位置はマップのラップを展開した座標で測るため、右へ2周すれば +200 と数えます。</p>
@@ -198,7 +211,7 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
         <li><b>移動を2乗して小さい動きを潰す</b> — ステップ毎の移動距離の2乗和は実は速度2乗の時間積分で、エネルギー収支を整理すると <b>落差 − μ×道のり</b> に比例することが判明。高低差依存がむしろ強まる逆効果だった。</li>
         <li>ただし「2乗」を速度ではなく<b>位置の広がり</b>に使うと話が一変する。重心からの距離の2乗平均の平方根 — <b>慣性半径 Rg</b>。定数ゼロ、純幾何、スケール共変、物理的意味も明快（軌跡という線の慣性モーメント）。小さなジタバタは重心に埋もれ、大きな動きだけが残る。</li>
       </ol>
-      <p>というわけで、多くの試作の末に生き残った3つの評価が、このゲームの3モードです。</p>
+      <p>というわけで、多くの試作の末に生き残った評価たちに、「線ではなく<b>面</b>で囲んだ大きさを測る」発想の🔷凸包サイズを加えた4つが、このゲームのモードです。</p>
     </div>
   </details>
   <div id="stageGrid"></div>
@@ -214,6 +227,7 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
         <div class="msg">理論値を探索中…</div>
         <div id="calcBarWrap"><div id="calcBar"></div></div>
       </div>
+      <div id="toast" class="hidden"></div>
       <div class="loopnote">🔁 上下左右ループ ／ クリックで玉を置く（何度でも試せます）</div>
     </div>
     <aside id="panel">
@@ -290,7 +304,7 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
    ===================================================================== */
 
 // ---------- 定数 ----------
-const VERSION   = 'v4';
+const VERSION   = 'v5';
 const L         = 100;      // ワールドの一辺（トーラス周期）
 const GRID      = 256;      // 高さ・勾配の格子解像度
 const G         = 25;       // 重力係数
@@ -305,11 +319,11 @@ const STAGES    = 100;
 const CANVAS_SIZE = 660;
 const SCALE     = CANVAS_SIZE / L;
 const STAR_TH   = [70, 90, 95];
-// 空気抵抗モードの物理: 転がり摩擦を抑えつつ、線形+速度2乗の空気抵抗を主体にした滑走物理。
-// 通常物理より長く滑るが、それでも十分に抵抗を効かせる設定。
-const MU_AIR    = 0.015;
-const DRAG_AIR  = 0.07;
-const QDRAG_AIR = 0.015;
+// 空気抵抗モードの物理: 転がり摩擦は通常のまま（μ=MU）、
+// 代わりに線形+速度2乗の空気抵抗を大幅に強化した「重い空気」物理。
+const DRAG_AIR  = 0.2;
+const QDRAG_AIR = 0.05;
+const HULL_SAMPLE_DIST = 1.0; // 凸包サイズモード: 軌跡サンプリングの距離間隔
 
 // ---------- 乱数 ----------
 function mulberry32(a){
@@ -341,20 +355,62 @@ function persist(){ lsSet(SAVE_KEY, JSON.stringify(save)); }
 function totalStars(){ let t=0; for(const k in save.stars) t+=save.stars[k]; return t; }
 // アンロック仕様: Stage 1〜3 は最初から解放。以降は★合計2個ごとに1ステージ解放
 function unlockedCount(){ return Math.min(STAGES, 3 + Math.floor(totalStars()/2)); }
-// ステージごとのモード割り当て: 🪂空気抵抗 → 📏直線距離 → 🌀慣性半径 の繰り返し
-const MODE_CYCLE = ['A','D','G'];
-const stageMode = n => MODE_CYCLE[(n-1)%3];
-// mode: 'A'=空気抵抗（滑走物理・道のり） / 'D'=直線距離（スタートからの最遠到達） / 'G'=慣性半径
+// ステージごとのモード割り当て: 🪂空気抵抗 → 🔷凸包サイズ → 📏直線距離 → 🌀慣性半径 の繰り返し
+const MODE_CYCLE = ['A','H','D','G'];
+const stageMode = n => MODE_CYCLE[(n-1)%4];
+// mode: 'A'=空気抵抗（強い空気抵抗・道のり） / 'H'=凸包サイズ（√凸包面積）
+//       'D'=直線距離（スタートからの最遠到達） / 'G'=慣性半径
 let mode = 'A';
-const metric = r => mode==='A' ? r.len : mode==='D' ? r.maxD : r.rg;
+const metric = r => mode==='A' ? r.len : mode==='H' ? r.hull : mode==='D' ? r.maxD : r.rg;
 const MODE_INFO={
   A:{ icon:'🪂', short:'空気抵抗', name:'🪂 空気抵抗モード', now:'今回の軌跡長', score:'軌跡の長さ',
-      hint:'💡 摩擦がほぼなく、空気抵抗で減速する滑走物理。停止までの道のりの長さがスコア。速いほど空気抵抗が強く効くため、勢い任せの急降下より滑走が長く続くルートが有利です。' },
+      hint:'💡 転がり摩擦は通常のまま、空気抵抗が非常に強い「重い空気」物理。停止までの道のりの長さがスコア。速いほど抵抗が効くため、無駄なく転がり続けるルートが有利です。' },
+  H:{ icon:'🔷', short:'凸包サイズ', name:'🔷 凸包サイズモード', now:'今回の凸包サイズ', score:'凸包サイズ √面積',
+      hint:'💡 軌跡の凸包（破線の多角形）の面積の平方根がスコア。一直線の往復は面積0。大きく「面」を囲むように回り込むルートを探そう。' },
   D:{ icon:'📏', short:'直線距離', name:'📏 直線距離モード', now:'今回の直線距離', score:'直線距離',
       hint:'💡 スタート地点からの最遠直線距離がスコア（破線の円＝現在の記録）。一方向へ長く抜けるルートを探そう。マップを何周しても積算されます。' },
   G:{ icon:'🌀', short:'慣性半径', name:'🌀 慣性半径モード', now:'今回の慣性半径', score:'慣性半径 Rg',
       hint:'💡 軌跡の重心からの広がり Rg がスコア（破線の円＝重心と Rg）。重心から離れた場所を長く走るほど円が広がります。一箇所に留まると重心が寄って伸びません。' },
 };
+// ---------- 特殊条件 ----------
+const COND_INFO={
+  res2:  { icon:'🐌', name:'抵抗2倍',  desc:'転がり摩擦と空気抵抗が2倍' },
+  noHigh:{ icon:'⛰', name:'入山規制', desc:'赤いエリア（高標高）には玉を置けない' },
+  grav2: { icon:'🌍', name:'重力2倍',  desc:'重力加速度が2倍' },
+};
+// ステージの特殊条件をシードから決定（後半ほど出現率が上がり、さらに後半は2つ重なる）
+function stageConds(n){
+  const rng=mulberry32(stageSeed(n) ^ 0x51ED5EED);
+  const r1=rng(), r2=rng(), r3=rng(), r4=rng(), r5=rng();
+  const conds=[];
+  const p1 = n<=8 ? 0 : Math.min(0.75, (n-8)/70);
+  if(r1<p1){
+    const pool=['res2','noHigh','grav2'];
+    conds.push(pool[Math.floor(r2*3)]);
+    const p2 = n<40 ? 0 : Math.min(0.4, (n-40)/150);
+    if(r3<p2){
+      const rest=pool.filter(c=>c!==conds[0]);
+      conds.push(rest[Math.floor(r4*2)]);
+    }
+  }
+  return {conds, highFrac:0.55+0.2*r5};
+}
+// 現在のステージの物理定数と条件（enterStage で設定、simulate が参照）
+let conf=null;
+function buildConf(n){
+  const m=stageMode(n);
+  const {conds, highFrac}=stageConds(n);
+  const mul=conds.includes('res2')?2:1;
+  return {
+    conds, highFrac,
+    g:    G*(conds.includes('grav2')?2:1),
+    mu:   MU*mul,
+    drag: (m==='A'?DRAG_AIR:DRAG)*mul,
+    qd:   (m==='A'?QDRAG_AIR:0)*mul,
+    noHigh: conds.includes('noHigh'),
+    hTh: Infinity, // 入山規制の高さしきい値（地形生成後に設定）
+  };
+}
 const theoKey = n => `longroll_${VERSION}_theo_${n}`;
 function loadTheoRaw(n){
   const v = lsGet(theoKey(n));
@@ -401,6 +457,32 @@ class Terrain{
         h[idx]=hh; gx[idx]=gxx; gy[idx]=gyy;
       }
     }
+    // 平坦帯: 一部の標高帯を h→f(h) 変換で完全フラット化（勾配は f'(h) 倍、C¹連続）
+    // 帯の内側60%は勾配0の完全な平地になり、玉が止まれるプラトーが生まれる
+    const rngF = mulberry32(stageSeed(stage) ^ 0x77777777);
+    const nB = 1 + Math.floor(rngF()*2); // 1〜2帯
+    for(let b=0;b<nB;b++){
+      let bmn=Infinity, bmx=-Infinity;
+      for(let i=0;i<N*N;i++){ if(h[i]<bmn)bmn=h[i]; if(h[i]>bmx)bmx=h[i]; }
+      const range=bmx-bmn;
+      const c = bmn + range*(0.15 + 0.7*rngF()); // 帯の中心高さ
+      const w = range*(0.05 + 0.06*rngF());      // 帯の半幅
+      const a = 0.6;
+      for(let i=0;i<N*N;i++){
+        const t=(h[i]-c)/w;
+        const at=Math.abs(t), sg=t<0?-1:1;
+        if(at<=a){ h[i]=c; gx[i]=0; gy[i]=0; }
+        else if(at<1){
+          const u=(at-a)/(1-a);
+          const S=u*u*(3-2*u);                    // f'(h)
+          const I=(1-a)*(u*u*u - u*u*u*u/2);      // ∫f'（t単位、smoothstepの積分）
+          h[i]=c + sg*w*I;
+          gx[i]*=S; gy[i]*=S;
+        }else{
+          h[i]=c + sg*w*((1-a)/2 + at-1);         // 帯の外は定数シフトのみ（勾配不変）
+        }
+      }
+    }
     // 勾配の最大値を SLOPE_TARGET に正規化（全ステージで物理条件を揃える）
     let maxS = 0;
     for(let i=0;i<N*N;i++){
@@ -417,12 +499,22 @@ class Terrain{
     this._contours=null; this._img=null;
   }
 
-  // 等高線（マーチングスクエア、ラップ込み）
-  contours(){
-    if(this._contours) return this._contours;
-    const N=GRID, h=this.h, cs=L/N, nLv=14;
-    const lvs=[], out=[];
-    for(let i=1;i<=nLv;i++){ lvs.push(this.minH+(this.maxH-this.minH)*i/(nLv+1)); out.push([]); }
+  // 高さの双一次補間（入山規制の判定に使用）
+  heightAt(x,y){
+    const N=GRID, inv=N/L, h=this.h;
+    const u=x*inv, v=y*inv;
+    let i0=u|0, j0=v|0;
+    if(i0>=N)i0-=N; if(j0>=N)j0-=N;
+    const fu=u-(u|0), fv=v-(v|0);
+    const i1=i0+1<N?i0+1:0, j1=j0+1<N?j0+1:0;
+    const r0=j0*N, r1=j1*N;
+    return (h[r0+i0]*(1-fu)+h[r0+i1]*fu)*(1-fv) + (h[r1+i0]*(1-fu)+h[r1+i1]*fu)*fv;
+  }
+
+  // 等高線（マーチングスクエア、ラップ込み）: 任意レベル群のセグメント抽出
+  marchingSegs(lvs){
+    const N=GRID, h=this.h, cs=L/N, nLv=lvs.length;
+    const out=lvs.map(()=>[]);
     for(let j=0;j<N;j++){
       const j1=(j+1)%N, y0=j*cs, y1=y0+cs;
       for(let i=0;i<N;i++){
@@ -462,8 +554,15 @@ class Terrain{
         }
       }
     }
-    this._contours=out;
     return out;
+  }
+
+  contours(){
+    if(this._contours) return this._contours;
+    const nLv=14, lvs=[];
+    for(let i=1;i<=nLv;i++) lvs.push(this.minH+(this.maxH-this.minH)*i/(nLv+1));
+    this._contours=this.marchingSegs(lvs);
+    return this._contours;
   }
 
   // カラー高さマップ（陰影付き）を N×N キャンバスに描画
@@ -517,31 +616,64 @@ const COLOR_LUT = (()=>{
   return lut;
 })();
 
+// ---------- 凸包（Andrew's monotone chain） ----------
+function hullMetrics(xs,ys){
+  const n=xs.length;
+  if(n<3) return {area:0, pts:[]};
+  const idx=Array.from({length:n},(_,i)=>i);
+  idx.sort((a,b)=> xs[a]-xs[b] || ys[a]-ys[b]);
+  const cross=(o,a,b)=>(xs[a]-xs[o])*(ys[b]-ys[o])-(ys[a]-ys[o])*(xs[b]-xs[o]);
+  const lower=[];
+  for(let k=0;k<idx.length;k++){
+    const i=idx[k];
+    while(lower.length>=2 && cross(lower[lower.length-2],lower[lower.length-1],i)<=0) lower.pop();
+    lower.push(i);
+  }
+  const upper=[];
+  for(let k=idx.length-1;k>=0;k--){
+    const i=idx[k];
+    while(upper.length>=2 && cross(upper[upper.length-2],upper[upper.length-1],i)<=0) upper.pop();
+    upper.push(i);
+  }
+  lower.pop(); upper.pop();
+  const hull=lower.concat(upper);
+  if(hull.length<3) return {area:0, pts:hull.map(i=>[xs[i],ys[i]])};
+  let A=0;
+  for(let i=0;i<hull.length;i++){
+    const j=(i+1)%hull.length;
+    A += xs[hull[i]]*ys[hull[j]] - xs[hull[j]]*ys[hull[i]];
+  }
+  return {area:Math.abs(A)/2, pts:hull.map(i=>[xs[i],ys[i]])};
+}
+
 // ---------- 物理シミュレーション（プレイヤーも理論値探索も共通） ----------
+// 物理定数は conf（ステージのモード＋特殊条件）から取る
 function simulate(t, sx, sy, record){
   const N=GRID, inv=N/L, gxA=t.gx, gyA=t.gy;
   let x=sx, y=sy, vx=0, vy=0, len=0, stop=0, steps=0;
   let ux=sx, uy=sy;              // 非ラップ座標（ループ跨ぎを積算）
   let maxD2=0;                   // 直線距離モード: スタートからの最遠到達距離（2乗）
   let mW=0, mSx=0, mSy=0, mSq=0; // 慣性半径モード: 道のり加重の1次・2次モーメント
-  let xs=null, ys=null, cumL=null, cumD=null, cumG=null, cgx=null, cgy=null;
+  // 凸包サイズモード: 約 HULL_SAMPLE_DIST 間隔で軌跡をサンプリング
+  const isH = mode==='H';
+  const sampX=isH?[sx]:null, sampY=isH?[sy]:null, sampStep=(isH&&record)?[0]:null;
+  let sampAcc=0, lastHull=0;
+  let xs=null, ys=null, cumL=null, cumD=null, cumG=null, cumH=null, cgx=null, cgy=null;
   if(record){
     xs=new Float32Array(MAX_STEPS+1);
     ys=new Float32Array(MAX_STEPS+1);
     cumL=new Float32Array(MAX_STEPS+1);
     cumD=new Float32Array(MAX_STEPS+1);
     cumG=new Float32Array(MAX_STEPS+1);
+    cumH=new Float32Array(MAX_STEPS+1);
     cgx=new Float32Array(MAX_STEPS+1);
     cgy=new Float32Array(MAX_STEPS+1);
     xs[0]=x; ys[0]=y;
-    cumL[0]=0; cumD[0]=0; cumG[0]=0; cgx[0]=sx; cgy[0]=sy;
+    cumL[0]=0; cumD[0]=0; cumG[0]=0; cumH[0]=0; cgx[0]=sx; cgy[0]=sy;
   }
-  // モード別物理: 空気抵抗モードのみ低摩擦・空気抵抗（線形+速度2乗）主体
-  const air = mode==='A';
-  const muC = air ? MU_AIR   : MU;
-  const drg = air ? DRAG_AIR : DRAG;
-  const qd  = air ? QDRAG_AIR : 0;
-  const dec = muC*G*DT;
+  // ステージ物理（モード＋特殊条件を反映済みの conf）
+  const GE=conf.g, muC=conf.mu, drg=conf.drag, qd=conf.qd;
+  const dec = muC*GE*DT;
   const slopeStop = muC*1.02;
   while(steps<MAX_STEPS){
     // 勾配（双一次補間・ラップ）
@@ -556,8 +688,8 @@ function simulate(t, sx, sy, record){
     const gy=gyA[r0+i0]*w00+gyA[r0+i1]*w01+gyA[r1+i0]*w10+gyA[r1+i1]*w11;
     // 重力 + 空気抵抗（線形、空気抵抗モードでは速度2乗項も）
     const sp0=Math.sqrt(vx*vx+vy*vy);
-    vx+=(-G*gx-(drg+qd*sp0)*vx)*DT;
-    vy+=(-G*gy-(drg+qd*sp0)*vy)*DT;
+    vx+=(-GE*gx-(drg+qd*sp0)*vx)*DT;
+    vy+=(-GE*gy-(drg+qd*sp0)*vy)*DT;
     // クーロン転がり摩擦（速度を反転させない）
     let sp=Math.sqrt(vx*vx+vy*vy);
     if(sp<=dec){ vx=0; vy=0; sp=0; }
@@ -572,10 +704,22 @@ function simulate(t, sx, sy, record){
     if(d2>maxD2) maxD2=d2;
     mW+=ds; mSx+=ds*ux; mSy+=ds*uy; mSq+=ds*(ux*ux+uy*uy);
     steps++;
+    if(isH){
+      sampAcc+=ds;
+      if(sampAcc>=HULL_SAMPLE_DIST){
+        sampAcc=0;
+        sampX.push(ux); sampY.push(uy);
+        if(record){
+          sampStep.push(steps);
+          lastHull=Math.sqrt(hullMetrics(sampX,sampY).area);
+        }
+      }
+    }
     if(record){
       xs[steps]=x; ys[steps]=y;
       cumL[steps]=len;
       cumD[steps]=Math.sqrt(maxD2);
+      cumH[steps]=lastHull;
       if(mW>0){
         const gx0=mSx/mW, gy0=mSy/mW;
         cgx[steps]=gx0; cgy[steps]=gy0;
@@ -595,9 +739,11 @@ function simulate(t, sx, sy, record){
     const v2=mSq/mW - gx0*gx0 - gy0*gy0;
     rg=v2>0?Math.sqrt(v2):0;
   }
+  let hull=0, hullArea=0;
+  if(isH){ hullArea=hullMetrics(sampX,sampY).area; hull=Math.sqrt(hullArea); }
   return record
-    ? {len,maxD,rg,n:steps,xs,ys,cumL,cumD,cumG,cgx,cgy}
-    : {len,maxD,rg,n:steps};
+    ? {len,maxD,rg,hull,hullArea,n:steps,xs,ys,cumL,cumD,cumG,cumH,cgx,cgy,sampX,sampY,sampStep}
+    : {len,maxD,rg,hull,n:steps};
 }
 
 // ---------- 理論値探索（グリッド全域 → 上位付近を段階的に絞り込み） ----------
@@ -610,6 +756,8 @@ const yieldNow = () => new Promise(res=>{
 });
 async function computeTheoretical(t, onP, token){
   const n1=40, cell=L/n1;
+  // 入山規制ステージでは、プレイヤー同様に規制エリア外の開始点だけを探索する
+  const valid=(x,y)=> !conf.noHigh || t.heightAt(x,y) < conf.hTh;
   const results=[];
   let best={len:-1,x:0,y:0};
   async function runList(list, base, span){
@@ -628,7 +776,10 @@ async function computeTheoretical(t, onP, token){
     }
   }
   const pts1=[];
-  for(let j=0;j<n1;j++)for(let i=0;i<n1;i++) pts1.push([(i+0.5)*cell,(j+0.5)*cell]);
+  for(let j=0;j<n1;j++)for(let i=0;i<n1;i++){
+    const px=(i+0.5)*cell, py=(j+0.5)*cell;
+    if(valid(px,py)) pts1.push([px,py]);
+  }
   await runList(pts1, 0, 0.75);
   results.sort((a,b)=>b[0]-a[0]);
   const tops=results.slice(0,12);
@@ -636,13 +787,15 @@ async function computeTheoretical(t, onP, token){
   for(const tp of tops)
     for(let dj=-2;dj<=2;dj++)for(let di=-2;di<=2;di++){
       if(di===0&&dj===0) continue;
-      pts2.push([wrapc(tp[1]+di*cell/5), wrapc(tp[2]+dj*cell/5)]);
+      const px=wrapc(tp[1]+di*cell/5), py=wrapc(tp[2]+dj*cell/5);
+      if(valid(px,py)) pts2.push([px,py]);
     }
   await runList(pts2, 0.75, 0.20);
   const pts3=[];
   for(let dj=-3;dj<=3;dj++)for(let di=-3;di<=3;di++){
     if(di===0&&dj===0) continue;
-    pts3.push([wrapc(best.x+di*cell/25), wrapc(best.y+dj*cell/25)]);
+    const px=wrapc(best.x+di*cell/25), py=wrapc(best.y+dj*cell/25);
+    if(valid(px,py)) pts3.push([px,py]);
   }
   await runList(pts3, 0.95, 0.05);
   return {len:best.len, x:best.x, y:best.y};
@@ -693,6 +846,7 @@ function renderSelect(){
     const unlocked = n<=unl;
     card.className='card'+(unlocked?'':' locked');
     const st=save.stars[n]||0;
+    const condIcons=stageConds(n).conds.map(c=>COND_INFO[c].icon).join('');
     if(unlocked){
       const bestLen=save.best[n];
       let bestLine='&nbsp;';
@@ -700,11 +854,11 @@ function renderSelect(){
         const cached=loadTheoRaw(n);
         bestLine = cached ? `ベスト ${(bestLen/cached.len*100).toFixed(1)}%` : `ベスト ${bestLen.toFixed(1)}`;
       }
-      card.innerHTML=`<div class="mode-tag">${mi.icon} ${mi.short}</div><div class="num">Stage ${n}</div><div class="stars">${starsHTML(st)}</div><div class="best">${bestLine}</div>`;
+      card.innerHTML=`<div class="mode-tag">${mi.icon} ${mi.short}</div><div class="num">Stage ${n}</div><div class="conds">${condIcons||'&nbsp;'}</div><div class="stars">${starsHTML(st)}</div><div class="best">${bestLine}</div>`;
       card.addEventListener('click',()=>enterStage(n));
     }else{
       const need=2*(n-3);
-      card.innerHTML=`<div class="mode-tag">${mi.icon} ${mi.short}</div><div class="num">Stage ${n}</div><div class="lock">🔒</div><div class="best">★${need}個で解放（あと${need-total}）</div>`;
+      card.innerHTML=`<div class="mode-tag">${mi.icon} ${mi.short}</div><div class="num">Stage ${n}</div><div class="conds">${condIcons||'&nbsp;'}</div><div class="lock">🔒</div><div class="best">★${need}個で解放（あと${need-total}）</div>`;
     }
     g.appendChild(card);
   }
@@ -738,6 +892,31 @@ function buildBackground(){
       }
       bgctx.stroke();
     }
+  }
+  // 入山規制: 高標高エリアを赤くオーバーレイし、境界線を描く
+  if(conf && conf.noHigh){
+    const N=GRID, h=terrain.h, th=conf.hTh;
+    const oc=document.createElement('canvas'); oc.width=N; oc.height=N;
+    const octx=oc.getContext('2d');
+    const im=octx.createImageData(N,N);
+    for(let i=0;i<N*N;i++){
+      if(h[i]>=th){
+        const p=i*4;
+        im.data[p]=255; im.data[p+1]=42; im.data[p+2]=42; im.data[p+3]=74;
+      }
+    }
+    octx.putImageData(im,0,0);
+    bgctx.imageSmoothingEnabled=true;
+    bgctx.drawImage(oc,0,0,CANVAS_SIZE,CANVAS_SIZE);
+    const border=terrain.marchingSegs([th])[0];
+    bgctx.strokeStyle='rgba(255,60,50,.85)';
+    bgctx.lineWidth=1.8;
+    bgctx.beginPath();
+    for(let k=0;k<border.length;k+=4){
+      bgctx.moveTo(border[k]*SCALE,   border[k+1]*SCALE);
+      bgctx.lineTo(border[k+2]*SCALE, border[k+3]*SCALE);
+    }
+    bgctx.stroke();
   }
 }
 function buildLegend(){
@@ -808,6 +987,23 @@ function render(){
       mctx.restore();
     }
   }
+  if(run && mode==='H' && run.hullPts && run.hullPts.length>=3){
+    // 凸包の多角形（非ラップ座標を9オフセットで描画）
+    mctx.save();
+    mctx.setLineDash([6,5]);
+    for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){
+      const p0=run.hullPts[0];
+      const path=new Path2D();
+      path.moveTo((p0[0]+ox*L)*SCALE,(p0[1]+oy*L)*SCALE);
+      for(let k=1;k<run.hullPts.length;k++){
+        path.lineTo((run.hullPts[k][0]+ox*L)*SCALE,(run.hullPts[k][1]+oy*L)*SCALE);
+      }
+      path.closePath();
+      mctx.lineWidth=3; mctx.strokeStyle='rgba(18,16,22,.4)'; mctx.stroke(path);
+      mctx.lineWidth=1.3; mctx.strokeStyle='rgba(255,255,255,.9)'; mctx.stroke(path);
+    }
+    mctx.restore();
+  }
   if(run && mode==='G'){
     // 慣性半径サークル（中心＝軌跡の重心、半径＝Rg）
     const ci=Math.min(run.n, Math.floor(run.cursorF));
@@ -876,15 +1072,21 @@ function updateHUD(){
 async function enterStage(n){
   if(calcToken) calcToken.cancelled=true;
   stage=n;
-  mode=stageMode(n);   // このステージの評価モード（物理も連動）
+  mode=stageMode(n);   // このステージの評価モード
+  conf=buildConf(n);   // 物理定数（モード＋特殊条件）
   showScreen('game');
   $('stageNum').textContent=n;
   $('seedInfo').textContent='SEED '+stageSeed(n).toString(16).toUpperCase();
   const mi=MODE_INFO[mode];
-  $('modeInfo').textContent = mi.name;
+  $('modeInfo').textContent = mi.name +
+    (conf.conds.length ? ' ｜ ' + conf.conds.map(c=>COND_INFO[c].icon+' '+COND_INFO[c].name).join('・') : '');
   $('hudNowLabel').textContent = mi.now;
-  $('hintBox').innerHTML = mi.hint + '<br>クリアで得た★は合計され、2個ごとに次のステージが解放されます。';
+  let hint = mi.hint;
+  for(const c of conf.conds) hint += `<br>${COND_INFO[c].icon} <b>特殊条件「${COND_INFO[c].name}」</b>：${COND_INFO[c].desc}。`;
+  hint += '<br>クリアで得た★は合計され、2個ごとに次のステージが解放されます。';
+  $('hintBox').innerHTML = hint;
   terrain=new Terrain(n);
+  conf.hTh = terrain.minH + conf.highFrac*(terrain.maxH - terrain.minH);
   theo=null; run=null;
   clearTrail();
   buildBackground();
@@ -912,19 +1114,32 @@ async function enterStage(n){
 }
 
 // ---------- 玉を置く ----------
+let toastTimer=null;
+function toast(msg){
+  const el=$('toast');
+  el.textContent=msg;
+  el.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.add('hidden'), 1600);
+}
 cv.addEventListener('pointerdown', e=>{
   if(e.button!==0) return;
   if(screenMode!=='game' || !theo || modalOpen) return;
   const r=cv.getBoundingClientRect();
   const wx=wrapc((e.clientX-r.left)/r.width*L);
   const wy=wrapc((e.clientY-r.top)/r.height*L);
+  if(conf.noHigh && terrain.heightAt(wx,wy)>=conf.hTh){
+    toast('⛰ 入山規制区域には置けません');
+    return;
+  }
   startRun(wx,wy);
 });
 function startRun(wx,wy){
   clearTrail();
   const r=simulate(terrain,wx,wy,true);
   run=r;
-  run.cum = mode==='A' ? r.cumL : mode==='D' ? r.cumD : r.cumG; // 再生HUD・スコアはモードの指標
+  run.cum = mode==='A' ? r.cumL : mode==='H' ? r.cumH : mode==='D' ? r.cumD : r.cumG; // 再生HUD・スコアはモードの指標
+  if(mode==='H'){ run.hullPtr=0; run.hullInX=[]; run.hullInY=[]; run.hullPts=[]; }
   run.cursorF=0; run.drawnIdx=0; run.finished=false;
 }
 
@@ -981,7 +1196,20 @@ function advance(){
   if(run && !run.finished){
     run.cursorF=Math.min(run.n, run.cursorF + dtr*120*speed);
     const cur=Math.floor(run.cursorF);
-    if(cur>run.drawnIdx){ drawTrailRange(run.drawnIdx,cur); run.drawnIdx=cur; }
+    if(cur>run.drawnIdx){
+      drawTrailRange(run.drawnIdx,cur);
+      // 凸包モード: 通過したサンプルを取り込んで凸包を更新
+      if(mode==='H' && run.sampStep){
+        let changed=false;
+        while(run.hullPtr<run.sampStep.length && run.sampStep[run.hullPtr]<=cur){
+          run.hullInX.push(run.sampX[run.hullPtr]);
+          run.hullInY.push(run.sampY[run.hullPtr]);
+          run.hullPtr++; changed=true;
+        }
+        if(changed) run.hullPts=hullMetrics(run.hullInX,run.hullInY).pts;
+      }
+      run.drawnIdx=cur;
+    }
     $('hudNow').textContent=fmt(run.cum[cur]) + (theo?` (${roundPct(run.cum[cur]/theo.len*100)}%)`:'');
     if(cur>=run.n){ run.finished=true; onRunFinished(); }
   }
@@ -1052,7 +1280,8 @@ showScreen('select');
 
 // デバッグ用フック
 window.__game={ get terrain(){return terrain}, get theo(){return theo}, get save(){return save},
-  get mode(){return mode}, stageMode, totalStars, unlockedCount,
+  get mode(){return mode}, get conf(){return conf}, stageMode, stageConds, buildConf,
+  totalStars, unlockedCount, hullMetrics,
   simulate, Terrain, enterStage, render, advance, get run(){return run} };
 </script>
 </body>
