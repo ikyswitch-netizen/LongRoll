@@ -81,7 +81,7 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
 .canvas-wrap{position:relative; flex:0 1 660px; max-width:660px}
 #cv{
   width:100%; aspect-ratio:1/1; display:block; border-radius:10px;
-  cursor:crosshair; user-select:none; touch-action:manipulation;
+  cursor:crosshair; user-select:none; touch-action:none;
   border:1px solid var(--line); background:#000;
 }
 .loopnote{color:var(--dim); font-size:12px; margin-top:6px}
@@ -92,12 +92,32 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
 #calcOverlay .msg{font-size:15px}
 #calcBarWrap{width:60%; height:10px; background:#2a3140; border-radius:5px; overflow:hidden}
 #calcBar{height:100%; width:0%; background:linear-gradient(90deg,var(--accent2),var(--accent)); transition:width .1s}
-#toast{
-  position:absolute; top:14px; left:50%; transform:translateX(-50%);
-  background:rgba(20,14,12,.92); border:1px solid #ff5a4e; color:#ffd9d5;
-  padding:6px 16px; border-radius:999px; font-size:13px; pointer-events:none; z-index:6;
+#toasts{
+  position:absolute; top:12px; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  z-index:6; pointer-events:none; width:max-content; max-width:92%;
 }
+.toastmsg{
+  background:rgba(16,19,26,.92); border:1px solid var(--line); color:var(--text);
+  padding:7px 16px; border-radius:999px; font-size:13px; white-space:nowrap;
+  opacity:0; transform:translateY(-10px);
+  transition:opacity .22s, transform .28s cubic-bezier(.2,.9,.3,1.35);
+  box-shadow:0 4px 14px rgba(0,0,0,.35);
+}
+.toastmsg.show{opacity:1; transform:translateY(0)}
+.toastmsg.hide{opacity:0; transform:translateY(-8px)}
+.toastmsg.gold{border-color:var(--accent); color:#ffd98a; background:rgba(42,32,10,.94)}
+.toastmsg.unlock{border-color:var(--accent2); color:#dceaff; background:rgba(20,32,52,.94)}
+.toastmsg.warn{border-color:#ff5a4e; color:#ffd9d5; background:rgba(40,16,12,.94)}
+#zoomCtrl{position:absolute; right:10px; bottom:10px; display:flex; flex-direction:column; gap:6px; z-index:5}
+#zoomCtrl .btn{width:38px; height:38px; padding:0; font-size:16px; text-align:center; background:rgba(28,33,43,.9)}
+.stagenav{display:flex; gap:8px; align-items:center; justify-content:space-between}
+.stagenav .cur{font-weight:700}
 .card .conds{font-size:12px; min-height:18px}
+@media (max-width:700px){
+  .btn{padding:9px 16px}
+  #zoomCtrl .btn{width:44px; height:44px}
+}
 #panel{flex:1 1 300px; min-width:280px; display:flex; flex-direction:column; gap:12px}
 .pbox{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 14px}
 .pbox h3{font-size:12px; color:var(--dim); font-weight:700; margin-bottom:6px; letter-spacing:.5px}
@@ -169,7 +189,7 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
       <li><b>🔷 凸包サイズ</b>：軌跡の<b>凸包（すべての通過点を含む最小の凸多角形）の面積の平方根</b>がスコア。一直線の往復は面積0（破線の多角形で表示）。</li>
       <li><b>📏 直線距離</b>：スタート地点から<b>最も遠くに到達した直線距離</b>がスコア（破線の円で表示。マップを何周しても積算）。</li>
       <li><b>🌀 慣性半径</b>：軌跡の<b>重心からの広がり Rg</b> がスコア（重心とRg円を破線で表示）。細かいジタバタは埋もれ、大きな動きだけが効きます。</li>
-      <li><b>⚠ 特殊条件</b>：🐌抵抗2倍 ／ ⛰入山規制（赤いエリアには玉を置けない。転がって侵入するのは自由。理論値探索も同条件） ／ 🌍重力2倍 ／ 🌋地殻変動（<b>青い破線</b>の高さより低地に玉が入ると、地形の高低が約3秒かけて反転する。1回だけ。反転中は玉は停止しない。地形は「もう一度」で元通り） ／ 🚀ジェットスタート（転がり出した瞬間、下り方向へ初速15。平坦地に置くと不発）。</li>
+      <li><b>⚠ 特殊条件</b>：🐌抵抗2倍 ／ ⛰入山規制（赤いエリアには玉を置けない。転がって侵入するのは自由。理論値探索も同条件） ／ 🌍重力2倍 ／ 🌋地殻変動（<b>青い破線</b>の高さより低地に玉が入ると、地形の高低が約3秒かけて反転する。1回だけ。反転中は玉は停止しない。地形表示はランが終わると自動で元に戻る） ／ 🚀ジェットスタート（転がり出した瞬間、下り方向へ初速15。平坦地に置くと不発）。</li>
       <li><b>理論値</b>＝そのステージで可能な最大スコア（ステージ読み込み時に全域探索で自動算出。初回のみ数秒）。</li>
       <li>「カラー」「等高線」ボタンで高さの表示方法を切り替えられます。明るい色ほど高い場所です。再生速度は ×1 / ×4 / ×16、「⏩ 結果へ」で即座に結果を見られます。</li>
     </ul>
@@ -229,10 +249,20 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
         <div class="msg">理論値を探索中…</div>
         <div id="calcBarWrap"><div id="calcBar"></div></div>
       </div>
-      <div id="toast" class="hidden"></div>
-      <div class="loopnote">🔁 上下左右ループ ／ クリックで玉を置く（何度でも試せます）</div>
+      <div id="toasts"></div>
+      <div id="zoomCtrl">
+        <button id="zoomIn" class="btn">＋</button>
+        <button id="zoomOut" class="btn">－</button>
+        <button id="zoomReset" class="btn" title="ズームをリセット">⤢</button>
+      </div>
+      <div class="loopnote">🔁 上下左右ループ ／ タップ・クリックで玉を置く ／ ドラッグでスクロール ／ ホイール・ピンチでズーム</div>
     </div>
     <aside id="panel">
+      <div class="pbox stagenav">
+        <button id="btnPrev" class="btn">◀ 前</button>
+        <span class="cur">STAGE <span id="navStage">1</span> / 100</span>
+        <button id="btnNext" class="btn">次 ▶</button>
+      </div>
       <div class="pbox">
         <h3>スコア</h3>
         <div class="statrow"><span class="k">理論値（探索最長）</span><span class="v" id="hudTheo">—</span></div>
@@ -266,9 +296,6 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
           <button class="btn" data-sp="16">×16</button>
           <button id="btnSkip" class="btn">⏩ 結果へ</button>
         </div>
-        <div class="btnrow" style="margin-top:8px">
-          <button id="btnClear" class="btn">🧹 玉を消す</button>
-        </div>
       </div>
       <div class="pbox hint" id="hintBox">
         💡 クリア（★1＝70%）で次の2ステージがアンロック。<br>
@@ -279,22 +306,7 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
 </section>
 </main>
 
-<!-- ========== 結果モーダル ========== -->
-<div id="modalWrap" class="hidden">
-  <div id="modal">
-    <h2>🏁 停止しました</h2>
-    <div class="row"><span id="mLenLabel">軌跡の長さ</span>：<b id="mLen">0</b>（理論値の <b id="mPct">0</b>%）<span id="mExtra" style="color:var(--dim)"></span></div>
-    <div id="mStars"></div>
-    <div class="row" style="color:var(--dim)">ベスト達成率：<b id="mBestPct">0</b>%</div>
-    <div id="mBadges"></div>
-    <div id="mUnlockNote">クリア（★1＝70%）でステージ n+1・n+2 がアンロックされます</div>
-    <div class="btns">
-      <button id="mRetry" class="btn">もう一度</button>
-      <button id="mNext" class="btn primary">次のステージ ▶</button>
-      <button id="mSelect" class="btn ghost">ステージ選択</button>
-    </div>
-  </div>
-</div>
+<!-- 結果はモーダルではなくトースト通知＋HUDで表示（連続挑戦をスムーズに） -->
 
 <script>
 'use strict';
@@ -887,7 +899,8 @@ const trailCanvas=document.createElement('canvas'); const tctx=setupCanvas(trail
 let screenMode='select';
 let stage=1, terrain=null, theo=null, run=null, calcToken=null;
 let showColor=true, showContour=true, speed=4;
-let modalOpen=false;
+// ビュー（ズーム＆スクロール）。cx,cy はワールド座標での画面中心
+let view={zoom:1, cx:L/2, cy:L/2};
 
 // ---------- 画面切替 ----------
 function showScreen(name){
@@ -1071,22 +1084,40 @@ function getContourLayer(){
 
 // ---------- 毎フレーム合成 ----------
 function render(){
+  mctx.setTransform(dpr,0,0,dpr,0,0);
   mctx.clearRect(0,0,CANVAS_SIZE,CANVAS_SIZE);
-  mctx.drawImage(bgCanvas,0,0,CANVAS_SIZE,CANVAS_SIZE);
-  // 🌋地殻変動: 反転の進行に合わせて反転地形をクロスフェード
-  if(run && conf && conf.inv && run.invStep>=0){
+  mctx.save();
+  // ビュー変換（ズーム＆スクロール）。以降は従来どおり 660px 空間で描画できる
+  mctx.translate(CANVAS_SIZE/2, CANVAS_SIZE/2);
+  mctx.scale(view.zoom, view.zoom);
+  mctx.translate(-view.cx*SCALE, -view.cy*SCALE);
+  // 表示範囲（660px空間）。タイルやマーカーのカリングに使用
+  const vHalf=CANVAS_SIZE/(2*view.zoom);
+  const vx0=view.cx*SCALE-vHalf, vx1=view.cx*SCALE+vHalf;
+  const vy0=view.cy*SCALE-vHalf, vy1=view.cy*SCALE+vHalf;
+  const tileVisible=(ox,oy)=> ox*CANVAS_SIZE<vx1 && (ox+1)*CANVAS_SIZE>vx0 &&
+                              oy*CANVAS_SIZE<vy1 && (oy+1)*CANVAS_SIZE>vy0;
+  // トーラスなので3×3タイルで描けばどこへスクロールしても継ぎ目なし
+  // pad: 不透明レイヤーはわずかに重ねてタイル境界のAA継ぎ目を消す
+  const drawTiled=(img, pad=0)=>{
+    for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++)
+      if(tileVisible(ox,oy)) mctx.drawImage(img, ox*CANVAS_SIZE, oy*CANVAS_SIZE, CANVAS_SIZE+pad, CANVAS_SIZE+pad);
+  };
+  drawTiled(bgCanvas, 0.75);
+  // 🌋地殻変動: 再生中のみ反転をクロスフェード（終了と同時に地形表示は元へ戻る）
+  if(run && !run.finished && conf && conf.inv && run.invStep>=0){
     const ci0=Math.min(run.n, Math.floor(run.cursorF));
     const ph = ci0<run.invStep ? 1 : Math.max(-1, 1 - 2*((ci0-run.invStep)*DT)/T_INV);
     if(ph<1){
       mctx.save();
       mctx.globalAlpha=(1-ph)/2;
       mctx.imageSmoothingEnabled=true;
-      mctx.drawImage(terrain.imageInv(),0,0,CANVAS_SIZE,CANVAS_SIZE);
+      drawTiled(terrain.imageInv(), 0.75);
       mctx.restore();
-      if(showContour) mctx.drawImage(getContourLayer(),0,0,CANVAS_SIZE,CANVAS_SIZE);
+      if(showContour) drawTiled(getContourLayer());
     }
   }
-  mctx.drawImage(trailCanvas,0,0,CANVAS_SIZE,CANVAS_SIZE);
+  drawTiled(trailCanvas);
   if(run && mode==='D'){
     // 直線距離サークル（中心＝スタート地点、半径＝現在の最遠到達距離）
     const ci=Math.min(run.n, Math.floor(run.cursorF));
@@ -1097,7 +1128,7 @@ function render(){
       mctx.setLineDash([6,5]);
       for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){
         const cx=(sx0+ox*L)*SCALE, cy=(sy0+oy*L)*SCALE;
-        if(cx+rr<0||cy+rr<0||cx-rr>CANVAS_SIZE||cy-rr>CANVAS_SIZE) continue;
+        if(cx+rr<vx0||cy+rr<vy0||cx-rr>vx1||cy-rr>vy1) continue;
         mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
         mctx.lineWidth=3; mctx.strokeStyle='rgba(18,16,22,.4)'; mctx.stroke();
         mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
@@ -1133,7 +1164,7 @@ function render(){
       mctx.setLineDash([6,5]);
       for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){
         const cx=(gx0+ox*L)*SCALE, cy=(gy0+oy*L)*SCALE;
-        if(cx+rr<0||cy+rr<0||cx-rr>CANVAS_SIZE||cy-rr>CANVAS_SIZE) continue;
+        if(cx+rr<vx0||cy+rr<vy0||cx-rr>vx1||cy-rr>vy1) continue;
         mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
         mctx.lineWidth=3; mctx.strokeStyle='rgba(18,16,22,.4)'; mctx.stroke();
         mctx.beginPath(); mctx.arc(cx,cy,rr,0,Math.PI*2);
@@ -1147,21 +1178,27 @@ function render(){
     }
   }
   if(run){
-    // スタート地点
-    const sx=run.xs[0]*SCALE, sy=run.ys[0]*SCALE;
-    mctx.beginPath(); mctx.arc(sx,sy,5,0,Math.PI*2);
-    mctx.strokeStyle='#fff'; mctx.lineWidth=2; mctx.stroke();
-    mctx.beginPath(); mctx.arc(sx,sy,1.8,0,Math.PI*2);
-    mctx.fillStyle='#fff'; mctx.fill();
-    // 玉
+    // スタート地点と玉（スクロールで端をまたいでも見えるよう±Lオフセットでも描く）
     const c=Math.min(run.n, Math.floor(run.cursorF));
-    const bx=run.xs[c]*SCALE, by=run.ys[c]*SCALE;
-    mctx.beginPath(); mctx.arc(bx+1.2,by+1.6,5.2,0,Math.PI*2);
-    mctx.fillStyle='rgba(0,0,0,.3)'; mctx.fill();
-    mctx.beginPath(); mctx.arc(bx,by,5,0,Math.PI*2);
-    mctx.fillStyle='#e5322d'; mctx.fill();
-    mctx.lineWidth=1.6; mctx.strokeStyle='#fff'; mctx.stroke();
+    for(let ox=-1;ox<=1;ox++)for(let oy=-1;oy<=1;oy++){
+      const sx=(run.xs[0]+ox*L)*SCALE, sy=(run.ys[0]+oy*L)*SCALE;
+      if(sx>=vx0-10&&sx<=vx1+10&&sy>=vy0-10&&sy<=vy1+10){
+        mctx.beginPath(); mctx.arc(sx,sy,5,0,Math.PI*2);
+        mctx.strokeStyle='#fff'; mctx.lineWidth=2; mctx.stroke();
+        mctx.beginPath(); mctx.arc(sx,sy,1.8,0,Math.PI*2);
+        mctx.fillStyle='#fff'; mctx.fill();
+      }
+      const bx=(run.xs[c]+ox*L)*SCALE, by=(run.ys[c]+oy*L)*SCALE;
+      if(bx>=vx0-10&&bx<=vx1+10&&by>=vy0-10&&by<=vy1+10){
+        mctx.beginPath(); mctx.arc(bx+1.2,by+1.6,5.2,0,Math.PI*2);
+        mctx.fillStyle='rgba(0,0,0,.3)'; mctx.fill();
+        mctx.beginPath(); mctx.arc(bx,by,5,0,Math.PI*2);
+        mctx.fillStyle='#e5322d'; mctx.fill();
+        mctx.lineWidth=1.6; mctx.strokeStyle='#fff'; mctx.stroke();
+      }
+    }
   }
+  mctx.restore();
 }
 
 // ---------- HUD ----------
@@ -1194,6 +1231,8 @@ async function enterStage(n){
   mode=stageMode(n);   // このステージの評価モード
   conf=buildConf(n);   // 物理定数（モード＋特殊条件）
   showScreen('game');
+  view={zoom:1, cx:L/2, cy:L/2}; // ビューをリセット
+  updateStageNav();
   $('stageNum').textContent=n;
   $('seedInfo').textContent='SEED '+stageSeed(n).toString(16).toUpperCase();
   const mi=MODE_INFO[mode];
@@ -1235,26 +1274,107 @@ async function enterStage(n){
 }
 
 // ---------- 玉を置く ----------
-let toastTimer=null;
-function toast(msg){
-  const el=$('toast');
+// ぴょこっと出るトースト通知（積み重ね表示・自動で消える）
+function toast(msg, cls='', dur=2600){
+  const box=$('toasts');
+  const el=document.createElement('div');
+  el.className='toastmsg'+(cls?' '+cls:'');
   el.textContent=msg;
-  el.classList.remove('hidden');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>el.classList.add('hidden'), 1600);
+  box.appendChild(el);
+  setTimeout(()=>el.classList.add('show'), 20);
+  setTimeout(()=>{ el.classList.add('hide'); setTimeout(()=>el.remove(), 350); }, dur);
+  while(box.children.length>4) box.firstChild.remove();
 }
-cv.addEventListener('pointerdown', e=>{
-  if(e.button!==0) return;
-  if(screenMode!=='game' || !theo || modalOpen) return;
-  const r=cv.getBoundingClientRect();
-  const wx=wrapc((e.clientX-r.left)/r.width*L);
-  const wy=wrapc((e.clientY-r.top)/r.height*L);
+
+// ---------- ビュー操作（ドラッグ＝スクロール、ホイール/ピンチ＝ズーム、タップ＝配置） ----------
+function screenToWorld(clientX, clientY){
+  const rect=cv.getBoundingClientRect();
+  const px=(clientX-rect.left)/rect.width*CANVAS_SIZE;
+  const py=(clientY-rect.top)/rect.height*CANVAS_SIZE;
+  return {
+    wx: wrapc(((px-CANVAS_SIZE/2)/view.zoom + view.cx*SCALE)/SCALE),
+    wy: wrapc(((py-CANVAS_SIZE/2)/view.zoom + view.cy*SCALE)/SCALE),
+    px, py,
+  };
+}
+function placeAt(clientX, clientY){
+  if(screenMode!=='game' || !theo) return;
+  const {wx,wy}=screenToWorld(clientX,clientY);
   if(conf.noHigh && terrain.heightAt(wx,wy)>=conf.hTh){
-    toast('⛰ 入山規制区域には置けません');
+    toast('⛰ 入山規制区域には置けません','warn');
     return;
   }
   startRun(wx,wy);
+}
+const pointers=new Map();
+let panState=null, pinchState=null;
+cv.addEventListener('pointerdown', e=>{
+  if(screenMode!=='game') return;
+  try{ cv.setPointerCapture(e.pointerId); }catch(err){ /* 合成イベント等でIDが無効な場合は無視 */ }
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===1){
+    panState={sx:e.clientX, sy:e.clientY, cx0:view.cx, cy0:view.cy, moved:false, button:e.button};
+    pinchState=null;
+  }else if(pointers.size===2){
+    const [p1,p2]=[...pointers.values()];
+    pinchState={d0:Math.hypot(p1.x-p2.x,p1.y-p2.y)||1, zoom0:view.zoom,
+                cx0:view.cx, cy0:view.cy, mx0:(p1.x+p2.x)/2, my0:(p1.y+p2.y)/2};
+    panState=null; // 2本指になったらタップ配置はキャンセル
+  }
 });
+cv.addEventListener('pointermove', e=>{
+  if(!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  const rect=cv.getBoundingClientRect();
+  if(pointers.size===1 && panState){
+    const dx=e.clientX-panState.sx, dy=e.clientY-panState.sy;
+    if(!panState.moved && Math.hypot(dx,dy)>6) panState.moved=true; // 6px超で「ドラッグ」扱い
+    if(panState.moved){
+      const per=rect.width/CANVAS_SIZE*SCALE*view.zoom; // 画面px / ワールド単位
+      view.cx=wrapc(panState.cx0 - dx/per);
+      view.cy=wrapc(panState.cy0 - dy/per);
+    }
+  }else if(pointers.size===2 && pinchState){
+    const [p1,p2]=[...pointers.values()];
+    const d=Math.hypot(p1.x-p2.x,p1.y-p2.y)||1;
+    view.zoom=Math.max(1, Math.min(8, pinchState.zoom0*(d/pinchState.d0)));
+    const per=rect.width/CANVAS_SIZE*SCALE*view.zoom;
+    const mx=(p1.x+p2.x)/2, my=(p1.y+p2.y)/2;
+    view.cx=wrapc(pinchState.cx0 - (mx-pinchState.mx0)/per);
+    view.cy=wrapc(pinchState.cy0 - (my-pinchState.my0)/per);
+  }
+});
+cv.addEventListener('pointerup', e=>{
+  const singleTap = pointers.size===1 && panState && !panState.moved && panState.button===0;
+  pointers.delete(e.pointerId);
+  if(singleTap) placeAt(e.clientX, e.clientY);
+  if(pointers.size<2) pinchState=null;
+  if(pointers.size===0) panState=null;
+  else if(pointers.size===1){
+    // ピンチから1本残った → パン継続（配置はしない）
+    const [p]=[...pointers.values()];
+    panState={sx:p.x, sy:p.y, cx0:view.cx, cy0:view.cy, moved:true, button:0};
+  }
+});
+cv.addEventListener('pointercancel', e=>{
+  pointers.delete(e.pointerId);
+  if(pointers.size===0){ panState=null; pinchState=null; }
+});
+cv.addEventListener('contextmenu', e=>e.preventDefault());
+cv.addEventListener('wheel', e=>{
+  if(screenMode!=='game') return;
+  e.preventDefault();
+  const rect=cv.getBoundingClientRect();
+  const px=(e.clientX-rect.left)/rect.width*CANVAS_SIZE;
+  const py=(e.clientY-rect.top)/rect.height*CANVAS_SIZE;
+  // カーソル位置のワールド座標を固定したままズーム
+  const wx=((px-CANVAS_SIZE/2)/view.zoom + view.cx*SCALE)/SCALE;
+  const wy=((py-CANVAS_SIZE/2)/view.zoom + view.cy*SCALE)/SCALE;
+  const z=Math.max(1, Math.min(8, view.zoom*Math.exp(-e.deltaY*0.0015)));
+  view.zoom=z;
+  view.cx=wrapc(wx - (px-CANVAS_SIZE/2)/(z*SCALE));
+  view.cy=wrapc(wy - (py-CANVAS_SIZE/2)/(z*SCALE));
+},{passive:false});
 function startRun(wx,wy){
   clearTrail();
   const r=simulate(terrain,wx,wy,true);
@@ -1270,42 +1390,25 @@ function onRunFinished(){
   const pct=roundPct(len/theo.len*100);
   const prevBest=save.best[stage]||0;
   const newRecord=len>prevBest;
+  const prevUnl=unlockedCount();
   if(newRecord) save.best[stage]=len;
   const bestPct=roundPct((save.best[stage])/theo.len*100);
   const stars=calcStars(bestPct);
   const prevStars=save.stars[stage]||0;
-  const prevUnl=unlockedCount();
   if(stars>prevStars) save.stars[stage]=stars;
   const newUnl=unlockedCount();
-  let unlockMsg='';
-  if(newUnl>prevUnl){
-    const ul=[]; for(let k=prevUnl+1;k<=newUnl;k++) ul.push(k);
-    unlockMsg=`🎉 Stage ${ul.join('・')} を解放！`;
-  }
   persist();
-  // モーダル表示
-  $('mLenLabel').textContent = MODE_INFO[mode].score;
-  $('mExtra').textContent = mode==='D' ? `（マップ約${(len/L).toFixed(1)}枚分）` : '';
-  $('mLen').textContent=fmt(len);
-  $('mPct').textContent=pct;
-  $('mBestPct').textContent=bestPct;
-  $('mStars').innerHTML=starsHTML(stars);
-  let badges='';
-  if(newRecord) badges+='<span class="badge gold">🏆 ベスト更新！</span>';
-  if(stars>prevStars) badges+=`<span class="badge gold">★ +${stars-prevStars}</span>`;
-  if(unlockMsg) badges+=`<span class="badge">${unlockMsg}</span>`;
-  $('mBadges').innerHTML=badges;
-  const total=totalStars();
-  $('mUnlockNote').textContent =
-    newUnl>=STAGES
-      ? `全ステージ解放済み！ 合計★${total}`
-      : `合計★${total} ／ 次の解放（Stage ${newUnl+1}）まで あと★${2*(newUnl+1-3)-total}個`;
-  $('mNext').disabled = !(stage<STAGES && stage+1<=newUnl);
-  modalOpen=true;
-  $('modalWrap').classList.remove('hidden');
+  // 結果はトースト通知（連続挑戦の邪魔をしない）
+  toast(`🏁 ${MODE_INFO[mode].score} ${fmt(len)}（理論値の ${pct}%）`);
+  if(newRecord && prevBest>0) toast(`🏆 ベスト更新！ ${bestPct}%`, 'gold', 3000);
+  if(stars>prevStars) toast(`⭐ ★+${stars-prevStars}（合計 ${totalStars()}個）`, 'gold', 3400);
+  if(newUnl>prevUnl){
+    const list = newUnl-prevUnl===1 ? `Stage ${newUnl}` : `Stage ${prevUnl+1}〜${newUnl}`;
+    toast(`🔓 ${list} を解放！`, 'unlock', 4200);
+  }
   updateHUD();
+  updateStageNav();
 }
-function closeModal(){ modalOpen=false; $('modalWrap').classList.add('hidden'); }
 
 // ---------- メインループ ----------
 // ロジック更新は rAF と interval の両方から呼ぶ（タブ非表示中も進行・完了する）
@@ -1346,10 +1449,21 @@ setInterval(()=>{ if(document.hidden) advance(); }, 100);
 // ---------- ボタン類 ----------
 $('btnBack').addEventListener('click',()=>{
   if(calcToken) calcToken.cancelled=true;
-  closeModal();
   renderSelect();
   showScreen('select');
 });
+// ステージ移動（ゲーム画面から直接）
+function updateStageNav(){
+  $('navStage').textContent=stage;
+  $('btnPrev').disabled = stage<=1;
+  $('btnNext').disabled = !(stage<STAGES && stage+1<=unlockedCount());
+}
+$('btnPrev').addEventListener('click',()=>{ if(stage>1) enterStage(stage-1); });
+$('btnNext').addEventListener('click',()=>{ if(stage<STAGES && stage+1<=unlockedCount()) enterStage(stage+1); });
+// ズームボタン
+$('zoomIn').addEventListener('click',()=>{ view.zoom=Math.min(8, view.zoom*1.5); });
+$('zoomOut').addEventListener('click',()=>{ view.zoom=Math.max(1, view.zoom/1.5); });
+$('zoomReset').addEventListener('click',()=>{ view={zoom:1, cx:L/2, cy:L/2}; });
 $('btnColor').addEventListener('click',()=>{
   showColor=!showColor;
   $('btnColor').classList.toggle('on',showColor);
@@ -1368,21 +1482,6 @@ for(const b of document.querySelectorAll('#speedRow [data-sp]')){
 }
 $('btnSkip').addEventListener('click',()=>{
   if(run && !run.finished) run.cursorF=run.n;
-});
-$('btnClear').addEventListener('click',()=>{
-  run=null; clearTrail(); updateHUD();
-});
-$('mRetry').addEventListener('click',()=>{
-  closeModal();
-  // 🌋地殻変動ステージ: リトライ時に反転した地形の見た目を元に戻す
-  if(conf && conf.inv){ run=null; clearTrail(); updateHUD(); }
-});
-$('mSelect').addEventListener('click',()=>{
-  closeModal(); renderSelect(); showScreen('select');
-});
-$('mNext').addEventListener('click',()=>{
-  closeModal();
-  if(stage<STAGES && stage+1<=unlockedCount()) enterStage(stage+1);
 });
 let resetArmed=false;
 $('btnReset').addEventListener('click',()=>{
@@ -1406,7 +1505,8 @@ showScreen('select');
 // デバッグ用フック
 window.__game={ get terrain(){return terrain}, get theo(){return theo}, get save(){return save},
   get mode(){return mode}, get conf(){return conf}, stageMode, stageConds, buildConf,
-  totalStars, unlockedCount, hullMetrics,
+  totalStars, unlockedCount, hullMetrics, startRun, placeAt, screenToWorld,
+  get view(){return view}, set view(v){view=v},
   simulate, Terrain, enterStage, render, advance, get run(){return run} };
 </script>
 </body>
