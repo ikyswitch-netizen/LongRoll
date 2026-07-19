@@ -158,7 +158,7 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
     <div class="rule-line">🎮 <span class="em">モード</span>：ステージごとに <b>🪂 空気抵抗</b> → <b>🔷 凸包サイズ</b> → <b>📏 直線距離</b> → <b>🌀 慣性半径</b> の順で割り当てられています（Stage 1=🪂, 2=🔷, 3=📏, 4=🌀, 5=🪂, …）。</div>
     <div class="rule-line">🔓 <span class="em">アンロック仕様</span>：Stage 1〜3 は最初から解放。<b>★の合計が2個増えるごと</b>に次のステージが1つ解放されます（Stage n の解放条件：合計★ <b>2×(n−3)</b> 個）。</div>
     <div class="rule-line">⭐ 評価：理論値の <b>70%</b> で ★☆☆ ／ <b>90%</b> で ★★☆ ／ <b>95%</b> で ★★★</div>
-    <div class="rule-line">⚠ <span class="em">特殊条件</span>：🐌 <b>抵抗2倍</b>（摩擦・空気抵抗×2） ／ ⛰ <b>入山規制</b>（赤いエリアに設置不可） ／ 🌍 <b>重力2倍</b> — 後半のステージほど出現しやすく、さらに後半は2つ重なることもあります（カードにアイコン表示）。</div>
+    <div class="rule-line">⚠ <span class="em">特殊条件</span>：🐌 <b>抵抗2倍</b> ／ ⛰ <b>入山規制</b>（赤エリアに設置不可） ／ 🌍 <b>重力2倍</b> ／ 🌋 <b>地殻変動</b>（青破線より低地に入ると高低が反転・1回だけ） ／ 🚀 <b>ジェットスタート</b>（開始時に下り方向へ強い初速） ／ ⛏ <b>トンネル</b>（急な上り坂は削って直進） — 後半ほど出現しやすく、2つ重なることもあります（カードにアイコン表示）。</div>
     <div class="rule-line">🔁 マップは上下左右がループ（トーラス構造）。玉は必ず停止します。🎲 各ステージはシード値から生成され、後半ほど複雑に。<b>平坦なプラトー</b>も出現します。</div>
   </div>
   <details class="howto">
@@ -169,7 +169,7 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
       <li><b>🔷 凸包サイズ</b>：軌跡の<b>凸包（すべての通過点を含む最小の凸多角形）の面積の平方根</b>がスコア。一直線の往復は面積0（破線の多角形で表示）。</li>
       <li><b>📏 直線距離</b>：スタート地点から<b>最も遠くに到達した直線距離</b>がスコア（破線の円で表示。マップを何周しても積算）。</li>
       <li><b>🌀 慣性半径</b>：軌跡の<b>重心からの広がり Rg</b> がスコア（重心とRg円を破線で表示）。細かいジタバタは埋もれ、大きな動きだけが効きます。</li>
-      <li><b>⚠ 特殊条件</b>：ステージによって 🐌抵抗2倍・⛰入山規制（赤いエリアには玉を置けない。転がって侵入するのは自由）・🌍重力2倍 が付きます。入山規制ステージでは理論値の探索も規制エリア外だけを対象にします。</li>
+      <li><b>⚠ 特殊条件</b>：🐌抵抗2倍 ／ ⛰入山規制（赤いエリアには玉を置けない。転がって侵入するのは自由。理論値探索も同条件） ／ 🌍重力2倍 ／ 🌋地殻変動（<b>青い破線</b>の高さより低地に玉が入ると、地形の高低が約3秒かけて反転する。1回だけ。反転中は玉は停止しない） ／ 🚀ジェットスタート（転がり出した瞬間、下り方向へ初速15。平坦地に置くと不発） ／ ⛏トンネル（進行方向の上り勾配が0.15を超えると削って直進。<b>オレンジ色の軌跡</b>がトンネル区間。地形はリトライで元通り）。</li>
       <li><b>理論値</b>＝そのステージで可能な最大スコア（ステージ読み込み時に全域探索で自動算出。初回のみ数秒）。</li>
       <li>「カラー」「等高線」ボタンで高さの表示方法を切り替えられます。明るい色ほど高い場所です。再生速度は ×1 / ×4 / ×16、「⏩ 結果へ」で即座に結果を見られます。</li>
     </ul>
@@ -184,6 +184,9 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
         <li>通常物理（🔷凸包サイズ・📏直線距離・🌀慣性半径）：c₁=0.1, c₂=0, μ=0.05</li>
         <li>🪂空気抵抗モード：c₁=0.2, c₂=0.05, μ=0.05 …… 摩擦は通常のまま、空気抵抗だけが大幅に強い</li>
         <li>特殊条件：🐌抵抗2倍で μ, c₁, c₂ がすべて2倍 ／ 🌍重力2倍で G が2倍</li>
+        <li>🚀ジェットスタート：初速 |v₀| = 15 を置いた地点の −∇h 方向（最急降下方向）に付与。|∇h|≈0 の平坦地では不発</li>
+        <li>⛏トンネル：進行方向の上り勾配 (∇h·v̂) が 0.15 を超える間、勾配を進行方向 0.15 にクランプし横方向の力を無視（直進で掘り進む）。地形データ自体は変更しないためリトライで元通り</li>
+        <li>🌋地殻変動：基準高さ未満の低地に初めて入った瞬間から、有効地形が h → −h へ3秒かけて線形に変化（h_eff = f(t)·h, f: 1→−1）。1回のみ。反転の途中では停止判定を行わない</li>
       </ul>
       <p>摩擦がある限り運動エネルギーは単調に減少するため、玉は必ず停止します（道のり ≦ 落差/μ が成り立つ）。</p>
       <p><b>🪂 軌跡長（空気抵抗モードのスコア）</b></p>
@@ -304,7 +307,7 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
    ===================================================================== */
 
 // ---------- 定数 ----------
-const VERSION   = 'v5';
+const VERSION   = 'v6';
 const L         = 100;      // ワールドの一辺（トーラス周期）
 const GRID      = 256;      // 高さ・勾配の格子解像度
 const G         = 25;       // 重力係数
@@ -324,6 +327,10 @@ const STAR_TH   = [70, 90, 95];
 const DRAG_AIR  = 0.2;
 const QDRAG_AIR = 0.05;
 const HULL_SAMPLE_DIST = 1.0; // 凸包サイズモード: 軌跡サンプリングの距離間隔
+// 特殊条件のパラメータ
+const T_INV        = 3.0;   // 🌋地殻変動: 高低の反転にかかる時間 [s]
+const JET_SPEED    = 15;    // 🚀ジェットスタート: 初速の大きさ
+const TUNNEL_SLOPE = 0.15;  // ⛏トンネル: この勾配を超える上りは削って直進
 
 // ---------- 乱数 ----------
 function mulberry32(a){
@@ -374,41 +381,49 @@ const MODE_INFO={
 };
 // ---------- 特殊条件 ----------
 const COND_INFO={
-  res2:  { icon:'🐌', name:'抵抗2倍',  desc:'転がり摩擦と空気抵抗が2倍' },
-  noHigh:{ icon:'⛰', name:'入山規制', desc:'赤いエリア（高標高）には玉を置けない' },
-  grav2: { icon:'🌍', name:'重力2倍',  desc:'重力加速度が2倍' },
+  res2:  { icon:'🐌', name:'抵抗2倍',        desc:'転がり摩擦と空気抵抗が2倍' },
+  noHigh:{ icon:'⛰', name:'入山規制',       desc:'赤いエリア（高標高）には玉を置けない' },
+  grav2: { icon:'🌍', name:'重力2倍',        desc:'重力加速度が2倍' },
+  inv:   { icon:'🌋', name:'地殻変動',       desc:'青い破線より低地に入ると地形の高低が約3秒かけて反転する（1回だけ）' },
+  jet:   { icon:'🚀', name:'ジェットスタート', desc:'転がり出した瞬間、下り方向へ強い初速が付く（平坦地では不発）' },
+  tun:   { icon:'⛏', name:'トンネル',       desc:'急な上り坂は削って直進する（オレンジの軌跡。地形はリトライで元通り）' },
 };
 // ステージの特殊条件をシードから決定（後半ほど出現率が上がり、さらに後半は2つ重なる）
 function stageConds(n){
   const rng=mulberry32(stageSeed(n) ^ 0x51ED5EED);
-  const r1=rng(), r2=rng(), r3=rng(), r4=rng(), r5=rng();
+  const r1=rng(), r2=rng(), r3=rng(), r4=rng(), r5=rng(), r6=rng();
   const conds=[];
+  const pool=['res2','noHigh','grav2','inv','jet','tun'];
+  const conflict={ inv:['noHigh'], noHigh:['inv'] }; // 表示が矛盾する組み合わせは除外
   const p1 = n<=8 ? 0 : Math.min(0.75, (n-8)/70);
   if(r1<p1){
-    const pool=['res2','noHigh','grav2'];
-    conds.push(pool[Math.floor(r2*3)]);
+    conds.push(pool[Math.floor(r2*pool.length)]);
     const p2 = n<40 ? 0 : Math.min(0.4, (n-40)/150);
     if(r3<p2){
-      const rest=pool.filter(c=>c!==conds[0]);
-      conds.push(rest[Math.floor(r4*2)]);
+      const rest=pool.filter(c=>c!==conds[0] && !(conflict[conds[0]]||[]).includes(c));
+      conds.push(rest[Math.floor(r4*rest.length)]);
     }
   }
-  return {conds, highFrac:0.55+0.2*r5};
+  return {conds, highFrac:0.55+0.2*r5, lowFrac:0.18+0.12*r6};
 }
 // 現在のステージの物理定数と条件（enterStage で設定、simulate が参照）
 let conf=null;
 function buildConf(n){
   const m=stageMode(n);
-  const {conds, highFrac}=stageConds(n);
+  const {conds, highFrac, lowFrac}=stageConds(n);
   const mul=conds.includes('res2')?2:1;
   return {
-    conds, highFrac,
+    conds, highFrac, lowFrac,
     g:    G*(conds.includes('grav2')?2:1),
     mu:   MU*mul,
     drag: (m==='A'?DRAG_AIR:DRAG)*mul,
     qd:   (m==='A'?QDRAG_AIR:0)*mul,
     noHigh: conds.includes('noHigh'),
-    hTh: Infinity, // 入山規制の高さしきい値（地形生成後に設定）
+    inv:  conds.includes('inv'),
+    jet:  conds.includes('jet'),
+    tun:  conds.includes('tun'),
+    hTh: Infinity,   // 入山規制の高さしきい値（地形生成後に設定）
+    hLow: -Infinity, // 地殻変動のトリガー高さ（地形生成後に設定）
   };
 }
 const theoKey = n => `longroll_${VERSION}_theo_${n}`;
@@ -496,7 +511,7 @@ class Terrain{
       if(h[i]<mn)mn=h[i]; if(h[i]>mx)mx=h[i];
     }
     this.h=h; this.gx=gx; this.gy=gy; this.minH=mn; this.maxH=mx;
-    this._contours=null; this._img=null;
+    this._contours=null; this._img=null; this._imgInv=null;
   }
 
   // 高さの双一次補間（入山規制の判定に使用）
@@ -591,6 +606,32 @@ class Terrain{
     this._img=c;
     return c;
   }
+
+  // 🌋地殻変動用: 高低が反転した地形のカラーマップ
+  imageInv(){
+    if(this._imgInv) return this._imgInv;
+    const N=GRID, h=this.h, gx=this.gx, gy=this.gy;
+    const c=document.createElement('canvas'); c.width=N; c.height=N;
+    const ctx=c.getContext('2d');
+    const im=ctx.createImageData(N,N);
+    const range=this.maxH-this.minH || 1;
+    const lut=COLOR_LUT;
+    for(let i=0;i<N*N;i++){
+      let t=(h[i]-this.minH)/range;
+      let ci=255-((t*255)|0); if(ci<0)ci=0; if(ci>255)ci=255;
+      let sh=1 - 1.15*(gx[i]*0.55 + gy[i]*0.75); // 勾配も反転した陰影
+      if(sh<0.6)sh=0.6; if(sh>1.32)sh=1.32;
+      const p=i*4;
+      let r=lut[ci*3]*sh, g=lut[ci*3+1]*sh, b=lut[ci*3+2]*sh;
+      im.data[p]  = r>255?255:r;
+      im.data[p+1]= g>255?255:g;
+      im.data[p+2]= b>255?255:b;
+      im.data[p+3]= 255;
+    }
+    ctx.putImageData(im,0,0);
+    this._imgInv=c;
+    return c;
+  }
 }
 
 // 標高カラーマップ LUT（低: 青 → 緑 → 砂 → 高: 白）
@@ -675,6 +716,25 @@ function simulate(t, sx, sy, record){
   const GE=conf.g, muC=conf.mu, drg=conf.drag, qd=conf.qd;
   const dec = muC*GE*DT;
   const slopeStop = muC*1.02;
+  // 🚀ジェットスタート: 置いた地点の下り勾配方向へ初速（平坦地では不発）
+  if(conf.jet){
+    const ju=x*inv, jv=y*inv;
+    let ja=ju|0, jb=jv|0;
+    if(ja>=N)ja-=N; if(jb>=N)jb-=N;
+    const jfu=ju-(ju|0), jfv=jv-(jv|0);
+    const ja1=ja+1<N?ja+1:0, jb1=jb+1<N?jb+1:0;
+    const jq0=jb*N, jq1=jb1*N;
+    const jw00=(1-jfu)*(1-jfv), jw01=jfu*(1-jfv), jw10=(1-jfu)*jfv, jw11=jfu*jfv;
+    const jgx=gxA[jq0+ja]*jw00+gxA[jq0+ja1]*jw01+gxA[jq1+ja]*jw10+gxA[jq1+ja1]*jw11;
+    const jgy=gyA[jq0+ja]*jw00+gyA[jq0+ja1]*jw01+gyA[jq1+ja]*jw10+gyA[jq1+ja1]*jw11;
+    const jgm=Math.sqrt(jgx*jgx+jgy*jgy);
+    if(jgm>1e-6){ vx=-jgx/jgm*JET_SPEED; vy=-jgy/jgm*JET_SPEED; }
+  }
+  // 🌋地殻変動の状態
+  let invPhase=1, invTriggered=false, invStep=-1;
+  const hA=t.h;
+  // ⛏トンネルの通過記録（軌跡の色分け用）
+  const tunFlag=(record&&conf.tun)?new Uint8Array(MAX_STEPS+1):null;
   while(steps<MAX_STEPS){
     // 勾配（双一次補間・ラップ）
     const u=x*inv, v=y*inv;
@@ -686,10 +746,33 @@ function simulate(t, sx, sy, record){
     const w00=(1-fu)*(1-fv), w01=fu*(1-fv), w10=(1-fu)*fv, w11=fu*fv;
     const gx=gxA[r0+i0]*w00+gxA[r0+i1]*w01+gxA[r1+i0]*w10+gxA[r1+i1]*w11;
     const gy=gyA[r0+i0]*w00+gyA[r0+i1]*w01+gyA[r1+i0]*w10+gyA[r1+i1]*w11;
-    // 重力 + 空気抵抗（線形、空気抵抗モードでは速度2乗項も）
     const sp0=Math.sqrt(vx*vx+vy*vy);
-    vx+=(-GE*gx-(drg+qd*sp0)*vx)*DT;
-    vy+=(-GE*gy-(drg+qd*sp0)*vy)*DT;
+    // 🌋地殻変動: 低地に入ったら反転開始（1回だけ）。有効勾配 = fac×∇h（fac: 1→−1）
+    let fac=1;
+    if(conf.inv){
+      if(!invTriggered){
+        const hh=hA[r0+i0]*w00+hA[r0+i1]*w01+hA[r1+i0]*w10+hA[r1+i1]*w11;
+        if(hh<conf.hLow){ invTriggered=true; invStep=steps; }
+      }
+      if(invTriggered){
+        invPhase=Math.max(-1, 1 - 2*((steps-invStep)*DT)/T_INV);
+        fac=invPhase;
+      }
+    }
+    let egx=gx*fac, egy=gy*fac;
+    // ⛏トンネル: 進行方向の上り勾配が TUNNEL_SLOPE を超えたら、削って直進
+    // （勾配の進行方向成分をクランプし、横方向の力は無視）
+    let tunneling=false;
+    if(conf.tun && sp0>1e-6){
+      const climb=(egx*vx+egy*vy)/sp0;
+      if(climb>TUNNEL_SLOPE){
+        egx=TUNNEL_SLOPE*vx/sp0; egy=TUNNEL_SLOPE*vy/sp0;
+        tunneling=true;
+      }
+    }
+    // 重力 + 空気抵抗（線形、空気抵抗モードでは速度2乗項も）
+    vx+=(-GE*egx-(drg+qd*sp0)*vx)*DT;
+    vy+=(-GE*egy-(drg+qd*sp0)*vy)*DT;
     // クーロン転がり摩擦（速度を反転させない）
     let sp=Math.sqrt(vx*vx+vy*vy);
     if(sp<=dec){ vx=0; vy=0; sp=0; }
@@ -717,6 +800,7 @@ function simulate(t, sx, sy, record){
     }
     if(record){
       xs[steps]=x; ys[steps]=y;
+      if(tunFlag) tunFlag[steps]=tunneling?1:0;
       cumL[steps]=len;
       cumD[steps]=Math.sqrt(maxD2);
       cumH[steps]=lastHull;
@@ -727,8 +811,9 @@ function simulate(t, sx, sy, record){
         cumG[steps]=v2>0?Math.sqrt(v2):0;
       }else{ cgx[steps]=ux; cgy[steps]=uy; cumG[steps]=0; }
     }
-    // 停止判定: 低速 かつ 摩擦で静止可能な緩勾配
-    if(sp<STOP_V && Math.sqrt(gx*gx+gy*gy)<=slopeStop){
+    // 停止判定: 低速 かつ 摩擦で静止可能な緩勾配（地殻変動の反転中は停止しない）
+    const settled = !invTriggered || invPhase<=-1;
+    if(settled && sp<STOP_V && Math.sqrt(gx*gx+gy*gy)<=slopeStop){
       if(++stop>=STOP_FRAMES) break;
     } else stop=0;
   }
@@ -742,7 +827,7 @@ function simulate(t, sx, sy, record){
   let hull=0, hullArea=0;
   if(isH){ hullArea=hullMetrics(sampX,sampY).area; hull=Math.sqrt(hullArea); }
   return record
-    ? {len,maxD,rg,hull,hullArea,n:steps,xs,ys,cumL,cumD,cumG,cumH,cgx,cgy,sampX,sampY,sampStep}
+    ? {len,maxD,rg,hull,hullArea,n:steps,xs,ys,cumL,cumD,cumG,cumH,cgx,cgy,sampX,sampY,sampStep,invStep,tunFlag}
     : {len,maxD,rg,hull,n:steps};
 }
 
@@ -893,6 +978,21 @@ function buildBackground(){
       bgctx.stroke();
     }
   }
+  // 地殻変動: トリガー高さの等高線を青い破線で描く
+  if(conf && conf.inv){
+    const line=terrain.marchingSegs([conf.hLow])[0];
+    bgctx.save();
+    bgctx.setLineDash([5,4]);
+    bgctx.strokeStyle='rgba(50,130,255,.95)';
+    bgctx.lineWidth=1.8;
+    bgctx.beginPath();
+    for(let k=0;k<line.length;k+=4){
+      bgctx.moveTo(line[k]*SCALE,   line[k+1]*SCALE);
+      bgctx.lineTo(line[k+2]*SCALE, line[k+3]*SCALE);
+    }
+    bgctx.stroke();
+    bgctx.restore();
+  }
   // 入山規制: 高標高エリアを赤くオーバーレイし、境界線を描く
   if(conf && conf.noHigh){
     const N=GRID, h=terrain.h, th=conf.hTh;
@@ -940,33 +1040,73 @@ function clearTrail(){
 }
 function drawTrailRange(from,to){
   if(to<=from) return;
-  const xs=run.xs, ys=run.ys, H=L/2;
-  const path=new Path2D();
+  const xs=run.xs, ys=run.ys, H=L/2, tf=run.tunFlag||null;
+  const pN=new Path2D();               // 通常区間
+  const pT=tf?new Path2D():null;       // ⛏トンネル区間（削って進んだ所）
   let px=xs[from], py=ys[from];
-  path.moveTo(px*SCALE,py*SCALE);
   for(let k=from+1;k<=to;k++){
     const x=xs[k], y=ys[k];
     let dx=x-px, dy=y-py, wrapped=false;
     if(dx>H){dx-=L;wrapped=true;} else if(dx<-H){dx+=L;wrapped=true;}
     if(dy>H){dy-=L;wrapped=true;} else if(dy<-H){dy+=L;wrapped=true;}
+    const P=(tf&&tf[k])?pT:pN;
+    P.moveTo(px*SCALE,py*SCALE);
+    P.lineTo((px+dx)*SCALE,(py+dy)*SCALE);
     if(wrapped){
-      path.lineTo((px+dx)*SCALE,(py+dy)*SCALE);
-      path.moveTo((x-dx)*SCALE,(y-dy)*SCALE);
-      path.lineTo(x*SCALE,y*SCALE);
-    }else{
-      path.lineTo(x*SCALE,y*SCALE);
+      P.moveTo((x-dx)*SCALE,(y-dy)*SCALE);
+      P.lineTo(x*SCALE,y*SCALE);
     }
     px=x; py=y;
   }
   tctx.lineCap='round'; tctx.lineJoin='round';
-  tctx.strokeStyle='rgba(255,255,255,.85)'; tctx.lineWidth=3.6; tctx.stroke(path);
-  tctx.strokeStyle='#e5322d'; tctx.lineWidth=1.8; tctx.stroke(path);
+  tctx.strokeStyle='rgba(255,255,255,.85)'; tctx.lineWidth=3.6; tctx.stroke(pN);
+  tctx.strokeStyle='#e5322d'; tctx.lineWidth=1.8; tctx.stroke(pN);
+  if(pT){
+    tctx.strokeStyle='rgba(30,20,12,.9)'; tctx.lineWidth=4.6; tctx.stroke(pT);
+    tctx.strokeStyle='#ff9f2e'; tctx.lineWidth=1.8; tctx.stroke(pT);
+  }
+}
+
+// 等高線だけの透明レイヤー（地殻変動の反転表示で使用。反転後も等高線の形は同一）
+let contourLayer=null;
+function getContourLayer(){
+  if(contourLayer) return contourLayer;
+  contourLayer=document.createElement('canvas');
+  const ctx=setupCanvas(contourLayer);
+  const cont=terrain.contours();
+  for(let li=0;li<cont.length;li++){
+    const segs=cont[li];
+    if(!segs.length) continue;
+    const bold=(li%4===3);
+    ctx.strokeStyle = bold?'rgba(15,12,8,.5)':'rgba(15,12,8,.3)';
+    ctx.lineWidth = bold?1.6:0.8;
+    ctx.beginPath();
+    for(let k=0;k<segs.length;k+=4){
+      ctx.moveTo(segs[k]*SCALE,   segs[k+1]*SCALE);
+      ctx.lineTo(segs[k+2]*SCALE, segs[k+3]*SCALE);
+    }
+    ctx.stroke();
+  }
+  return contourLayer;
 }
 
 // ---------- 毎フレーム合成 ----------
 function render(){
   mctx.clearRect(0,0,CANVAS_SIZE,CANVAS_SIZE);
   mctx.drawImage(bgCanvas,0,0,CANVAS_SIZE,CANVAS_SIZE);
+  // 🌋地殻変動: 反転の進行に合わせて反転地形をクロスフェード
+  if(run && conf && conf.inv && run.invStep>=0){
+    const ci0=Math.min(run.n, Math.floor(run.cursorF));
+    const ph = ci0<run.invStep ? 1 : Math.max(-1, 1 - 2*((ci0-run.invStep)*DT)/T_INV);
+    if(ph<1){
+      mctx.save();
+      mctx.globalAlpha=(1-ph)/2;
+      mctx.imageSmoothingEnabled=true;
+      mctx.drawImage(terrain.imageInv(),0,0,CANVAS_SIZE,CANVAS_SIZE);
+      mctx.restore();
+      if(showContour) mctx.drawImage(getContourLayer(),0,0,CANVAS_SIZE,CANVAS_SIZE);
+    }
+  }
   mctx.drawImage(trailCanvas,0,0,CANVAS_SIZE,CANVAS_SIZE);
   if(run && mode==='D'){
     // 直線距離サークル（中心＝スタート地点、半径＝現在の最遠到達距離）
@@ -1086,7 +1226,9 @@ async function enterStage(n){
   hint += '<br>クリアで得た★は合計され、2個ごとに次のステージが解放されます。';
   $('hintBox').innerHTML = hint;
   terrain=new Terrain(n);
-  conf.hTh = terrain.minH + conf.highFrac*(terrain.maxH - terrain.minH);
+  conf.hTh  = terrain.minH + conf.highFrac*(terrain.maxH - terrain.minH);
+  conf.hLow = terrain.minH + conf.lowFrac *(terrain.maxH - terrain.minH);
+  contourLayer=null;
   theo=null; run=null;
   clearTrail();
   buildBackground();
