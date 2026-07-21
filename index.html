@@ -109,14 +109,11 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
 .toastmsg.gold{border-color:var(--accent); color:#ffd98a; background:rgba(42,32,10,.94)}
 .toastmsg.unlock{border-color:var(--accent2); color:#dceaff; background:rgba(20,32,52,.94)}
 .toastmsg.warn{border-color:#ff5a4e; color:#ffd9d5; background:rgba(40,16,12,.94)}
-#zoomCtrl{position:absolute; right:10px; bottom:10px; display:flex; flex-direction:column; gap:6px; z-index:5}
-#zoomCtrl .btn{width:38px; height:38px; padding:0; font-size:16px; text-align:center; background:rgba(28,33,43,.9)}
 .stagenav{display:flex; gap:8px; align-items:center; justify-content:space-between}
 .stagenav .cur{font-weight:700}
 .card .conds{font-size:12px; min-height:18px}
 @media (max-width:700px){
   .btn{padding:9px 16px}
-  #zoomCtrl .btn{width:44px; height:44px}
 }
 #panel{flex:1 1 300px; min-width:280px; display:flex; flex-direction:column; gap:12px}
 .pbox{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:12px 14px}
@@ -191,6 +188,7 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
       <li><b>🌀 慣性半径</b>：軌跡の<b>重心からの広がり Rg</b> がスコア（重心とRg円を破線で表示）。細かいジタバタは埋もれ、大きな動きだけが効きます。</li>
       <li><b>⚠ 特殊条件</b>：🐌抵抗2倍 ／ ⛰入山規制（赤いエリアには玉を置けない。転がって侵入するのは自由。理論値探索も同条件） ／ 🌍重力2倍 ／ 🌋地殻変動（<b>青い破線</b>の高さより低地に玉が入ると、地形の高低が約3秒かけて反転する。1回だけ。反転中は玉は停止しない。地形表示はランが終わると自動で元に戻る） ／ 🚀ジェットスタート（転がり出した瞬間、下り方向へ初速15。平坦地に置くと不発）。</li>
       <li><b>理論値</b>＝そのステージで可能な最大スコア（ステージ読み込み時に全域探索で自動算出。初回のみ数秒）。</li>
+      <li>達成率<b>100%以上</b>を出したステージでは「👑 理論値の軌跡を再生」ボタンが現れ、探索が見つけた最良の転がりをゴールドの軌跡で再生できます（記録には影響しません）。</li>
       <li>「カラー」「等高線」ボタンで高さの表示方法を切り替えられます。明るい色ほど高い場所です。再生速度は ×1 / ×4 / ×16、「⏩ 結果へ」で即座に結果を見られます。</li>
     </ul>
   </details>
@@ -250,11 +248,6 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
         <div id="calcBarWrap"><div id="calcBar"></div></div>
       </div>
       <div id="toasts"></div>
-      <div id="zoomCtrl">
-        <button id="zoomIn" class="btn">＋</button>
-        <button id="zoomOut" class="btn">－</button>
-        <button id="zoomReset" class="btn" title="ズームをリセット">⤢</button>
-      </div>
       <div class="loopnote">🔁 上下左右ループ ／ タップ・クリックで玉を置く ／ ドラッグでスクロール ／ ホイール・ピンチでズーム</div>
     </div>
     <aside id="panel">
@@ -295,6 +288,9 @@ details.howto ul{margin:8px 0 4px 20px; color:var(--dim)}
           <button class="btn on" data-sp="4">×4</button>
           <button class="btn" data-sp="16">×16</button>
           <button id="btnSkip" class="btn">⏩ 結果へ</button>
+        </div>
+        <div class="btnrow" style="margin-top:8px">
+          <button id="btnTheo" class="btn hidden" title="達成率100%以上で解放">👑 理論値の軌跡を再生</button>
         </div>
       </div>
       <div class="pbox hint" id="hintBox">
@@ -1055,8 +1051,11 @@ function drawTrailRange(from,to){
     px=x; py=y;
   }
   tctx.lineCap='round'; tctx.lineJoin='round';
-  tctx.strokeStyle='rgba(255,255,255,.85)'; tctx.lineWidth=3.6; tctx.stroke(path);
-  tctx.strokeStyle='#e5322d'; tctx.lineWidth=1.8; tctx.stroke(path);
+  // 理論値のお手本再生はゴールドの軌跡で区別
+  tctx.strokeStyle= run.ghost ? 'rgba(40,28,6,.85)' : 'rgba(255,255,255,.85)';
+  tctx.lineWidth=3.6; tctx.stroke(path);
+  tctx.strokeStyle= run.ghost ? '#ffc24d' : '#e5322d';
+  tctx.lineWidth=1.8; tctx.stroke(path);
 }
 
 // 等高線だけの透明レイヤー（地殻変動の反転表示で使用。反転後も等高線の形は同一）
@@ -1193,7 +1192,7 @@ function render(){
         mctx.beginPath(); mctx.arc(bx+1.2,by+1.6,5.2,0,Math.PI*2);
         mctx.fillStyle='rgba(0,0,0,.3)'; mctx.fill();
         mctx.beginPath(); mctx.arc(bx,by,5,0,Math.PI*2);
-        mctx.fillStyle='#e5322d'; mctx.fill();
+        mctx.fillStyle= run.ghost ? '#f5a623' : '#e5322d'; mctx.fill();
         mctx.lineWidth=1.6; mctx.strokeStyle='#fff'; mctx.stroke();
       }
     }
@@ -1222,6 +1221,7 @@ function updateHUD(){
     for(const el of $('hudTh').querySelectorAll('span')) el.classList.remove('ok');
   }
   if(!run) $('hudNow').textContent='—';
+  $('btnTheo').classList.toggle('hidden', !theoUnlocked());
 }
 
 // ---------- ステージ開始 ----------
@@ -1387,6 +1387,11 @@ function startRun(wx,wy){
 // ---------- 結果 ----------
 function onRunFinished(){
   const len=run.cum[run.n];
+  if(run.ghost){
+    // 理論値のお手本再生: 記録は一切更新しない
+    toast(`👑 理論値の軌跡を再生しました（${MODE_INFO[mode].score} ${fmt(len)}）`);
+    return;
+  }
   const pct=roundPct(len/theo.len*100);
   const prevBest=save.best[stage]||0;
   const newRecord=len>prevBest;
@@ -1460,10 +1465,15 @@ function updateStageNav(){
 }
 $('btnPrev').addEventListener('click',()=>{ if(stage>1) enterStage(stage-1); });
 $('btnNext').addEventListener('click',()=>{ if(stage<STAGES && stage+1<=unlockedCount()) enterStage(stage+1); });
-// ズームボタン
-$('zoomIn').addEventListener('click',()=>{ view.zoom=Math.min(8, view.zoom*1.5); });
-$('zoomOut').addEventListener('click',()=>{ view.zoom=Math.max(1, view.zoom/1.5); });
-$('zoomReset').addEventListener('click',()=>{ view={zoom:1, cx:L/2, cy:L/2}; });
+// 👑 理論値の軌跡を再生（そのステージで達成率100%以上のときだけ解放。記録には残さない）
+function theoUnlocked(){
+  return !!(theo && save.best[stage]!==undefined && roundPct(save.best[stage]/theo.len*100)>=100);
+}
+$('btnTheo').addEventListener('click',()=>{
+  if(!theoUnlocked()) return;
+  startRun(theo.x, theo.y);
+  run.ghost=true; // お手本再生: スコア記録・トースト対象外
+});
 $('btnColor').addEventListener('click',()=>{
   showColor=!showColor;
   $('btnColor').classList.toggle('on',showColor);
